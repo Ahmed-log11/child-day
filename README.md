@@ -39,9 +39,51 @@ Video → YOLO11 detect + pose + tracking → per-second states → smoothing �
 - The API format lives in `docs/api.md`. If it changes, update `frontend/src/mocks/` in the same pull request.
 - Datasets, videos, model weights and `.env` are never committed.
 
+## Start here
+
+1. Read `docs/api.md`. Every part of the project follows it.
+2. Find your files in the table below. Each function says what it takes, what it returns, and who owns it.
+3. Prototype in a notebook if you like, then move the working code into your `.py` file.
+
+## Team
+
+| Who | Owns | Files |
+|---|---|---|
+| P1 | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` |
+| P2 | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` |
+| P4 | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` |
+| Ahmed | Frontend, integration, deployment, reviews every pull request | `frontend/`, `docs/` |
+
 ## Running locally
 
-_Coming in the next step (Docker Compose)._
+Everything, with Docker:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+- Frontend: http://localhost:5173
+- Backend docs: http://localhost:8000/docs
+
+Without Docker:
+
+```bash
+# backend
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload        # http://localhost:8000/docs
+pytest                               # run the tests
+
+# frontend (in a second terminal)
+cd frontend
+npm install
+npm run dev                          # http://localhost:5173
+```
+
+The frontend uses the mock data in `frontend/src/mocks/` by default, so it works without the backend. Set `VITE_USE_MOCKS=false` to use the real API.
+
+Deployment steps are in `docs/deployment.md`.
 
 ## Privacy
 
