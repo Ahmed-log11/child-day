@@ -1,0 +1,6 @@
+__pycache__/
+*.db
+storage/
+weights/*.pt
+tests/
+.env

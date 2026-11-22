@@ -1,0 +1,113 @@
+{
+  "child_id": "c1",
+  "range": "week",
+  "start_date": "2026-11-19",
+  "end_date": "2026-11-25",
+  "days": [
+    {
+      "date": "2026-11-25",
+      "tv_s": 2643,
+      "tablet_s": 2933,
+      "phone_s": 696,
+      "multi_screen_s": 1388,
+      "active_s": 2651,
+      "light_s": 2143,
+      "still_s": 7814,
+      "longest_still_s": 3898,
+      "alerts": 1,
+      "is_demo_data": false
+    },
+    {
+      "date": "2026-11-24",
+      "tv_s": 4139,
+      "tablet_s": 1669,
+      "phone_s": 381,
+      "multi_screen_s": 499,
+      "active_s": 3143,
+      "light_s": 2958,
+      "still_s": 4514,
+      "longest_still_s": 3811,
+      "alerts": 0,
+      "is_demo_data": true
+    },
+    {
+      "date": "2026-11-23",
+      "tv_s": 2390,
+      "tablet_s": 1382,
+      "phone_s": 584,
+      "multi_screen_s": 931,
+      "active_s": 3194,
+      "light_s": 2896,
+      "still_s": 5480,
+      "longest_still_s": 1922,
+      "alerts": 2,
+      "is_demo_data": true
+    },
+    {
+      "date": "2026-11-22",
+      "tv_s": 4198,
+      "tablet_s": 2524,
+      "phone_s": 50,
+      "multi_screen_s": 752,
+      "active_s": 1090,
+      "light_s": 2640,
+      "still_s": 5090,
+      "longest_still_s": 2686,
+      "alerts": 1,
+      "is_demo_data": true
+    },
+    {
+      "date": "2026-11-21",
+      "tv_s": 2171,
+      "tablet_s": 2638,
+      "phone_s": 60,
+      "multi_screen_s": 1458,
+      "active_s": 1407,
+      "light_s": 1957,
+      "still_s": 8775,
+      "longest_still_s": 1753,
+      "alerts": 2,
+      "is_demo_data": true
+    },
+    {
+      "date": "2026-11-20",
+      "tv_s": 2037,
+      "tablet_s": 2978,
+      "phone_s": 219,
+      "multi_screen_s": 376,
+      "active_s": 1252,
+      "light_s": 2388,
+      "still_s": 7425,
+      "longest_still_s": 1786,
+      "alerts": 0,
+      "is_demo_data": true
+    },
+    {
+      "date": "2026-11-19",
+      "tv_s": 3126,
+      "tablet_s": 1517,
+      "phone_s": 404,
+      "multi_screen_s": 398,
+      "active_s": 1196,
+      "light_s": 2597,
+      "still_s": 4771,
+      "longest_still_s": 2997,
+      "alerts": 2,
+      "is_demo_data": true
+    }
+  ],
+  "totals": {
+    "tv_s": 20704,
+    "tablet_s": 15641,
+    "phone_s": 2394,
+    "multi_screen_s": 5802,
+    "active_s": 13933,
+    "light_s": 17579,
+    "still_s": 43869,
+    "alerts": 8
+  },
+  "guideline": {
+    "age_group": "5-12",
+    "active_target_s_per_day": 3600
+  }
+}

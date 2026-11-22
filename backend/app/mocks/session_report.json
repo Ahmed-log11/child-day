@@ -1,0 +1,241 @@
+{
+  "id": "s1",
+  "date": "2026-11-25",
+  "started_at": "2026-11-25T16:00:00+03:00",
+  "video": {
+    "url": "/mock/videos/s1.mp4",
+    "duration_s": 900,
+    "width": 1920,
+    "height": 1080,
+    "analyzed_fps": 3
+  },
+  "children": [
+    {
+      "id": "c1",
+      "name": "Sara",
+      "age_group": "5-12",
+      "track_ids": [
+        1
+      ]
+    },
+    {
+      "id": "c2",
+      "name": "Omar",
+      "age_group": "5-12",
+      "track_ids": [
+        2
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "tv",
+      "start_s": 0,
+      "end_s": 210
+    },
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "multi_screen",
+      "start_s": 210,
+      "end_s": 330
+    },
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "tv",
+      "start_s": 330,
+      "end_s": 420
+    },
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "none",
+      "start_s": 420,
+      "end_s": 600
+    },
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "tablet",
+      "start_s": 600,
+      "end_s": 780
+    },
+    {
+      "child_id": "c1",
+      "category": "screen",
+      "state": "none",
+      "start_s": 780,
+      "end_s": 900
+    },
+    {
+      "child_id": "c1",
+      "category": "activity",
+      "state": "still",
+      "start_s": 0,
+      "end_s": 340
+    },
+    {
+      "child_id": "c1",
+      "category": "activity",
+      "state": "light",
+      "start_s": 340,
+      "end_s": 420
+    },
+    {
+      "child_id": "c1",
+      "category": "activity",
+      "state": "active",
+      "start_s": 420,
+      "end_s": 560
+    },
+    {
+      "child_id": "c1",
+      "category": "activity",
+      "state": "light",
+      "start_s": 560,
+      "end_s": 700
+    },
+    {
+      "child_id": "c1",
+      "category": "activity",
+      "state": "still",
+      "start_s": 700,
+      "end_s": 900
+    },
+    {
+      "child_id": "c1",
+      "category": "presence",
+      "state": "present",
+      "start_s": 0,
+      "end_s": 900
+    },
+    {
+      "child_id": "c2",
+      "category": "screen",
+      "state": "phone",
+      "start_s": 0,
+      "end_s": 240
+    },
+    {
+      "child_id": "c2",
+      "category": "screen",
+      "state": "none",
+      "start_s": 240,
+      "end_s": 540
+    },
+    {
+      "child_id": "c2",
+      "category": "screen",
+      "state": "tv",
+      "start_s": 540,
+      "end_s": 900
+    },
+    {
+      "child_id": "c2",
+      "category": "activity",
+      "state": "still",
+      "start_s": 0,
+      "end_s": 240
+    },
+    {
+      "child_id": "c2",
+      "category": "activity",
+      "state": "active",
+      "start_s": 240,
+      "end_s": 420
+    },
+    {
+      "child_id": "c2",
+      "category": "activity",
+      "state": "light",
+      "start_s": 420,
+      "end_s": 540
+    },
+    {
+      "child_id": "c2",
+      "category": "activity",
+      "state": "still",
+      "start_s": 540,
+      "end_s": 900
+    },
+    {
+      "child_id": "c2",
+      "category": "presence",
+      "state": "present",
+      "start_s": 0,
+      "end_s": 900
+    }
+  ],
+  "totals": {
+    "c1": {
+      "tv_s": 300,
+      "tablet_s": 180,
+      "phone_s": 0,
+      "multi_screen_s": 120,
+      "none_s": 300,
+      "active_s": 140,
+      "light_s": 220,
+      "still_s": 540,
+      "present_s": 900,
+      "longest_still": {
+        "duration_s": 340,
+        "start_s": 0,
+        "during": "tv"
+      }
+    },
+    "c2": {
+      "tv_s": 360,
+      "tablet_s": 0,
+      "phone_s": 240,
+      "multi_screen_s": 0,
+      "none_s": 300,
+      "active_s": 180,
+      "light_s": 120,
+      "still_s": 600,
+      "present_s": 900,
+      "longest_still": {
+        "duration_s": 360,
+        "start_s": 540,
+        "during": "tv"
+      }
+    }
+  },
+  "events": [
+    {
+      "id": "e1",
+      "child_id": "c1",
+      "type": "danger_zone",
+      "start_s": 512,
+      "end_s": 530,
+      "confidence": 0.91,
+      "zone_id": "z1",
+      "clip_url": "/mock/clips/e1.mp4",
+      "reviewed": false
+    },
+    {
+      "id": "e2",
+      "child_id": "c2",
+      "type": "violent_contact",
+      "start_s": 601,
+      "end_s": 606,
+      "confidence": 0.74,
+      "zone_id": null,
+      "clip_url": "/mock/clips/e2.mp4",
+      "reviewed": false
+    },
+    {
+      "id": "e3",
+      "child_id": "c1",
+      "type": "fall",
+      "start_s": 455,
+      "end_s": 459,
+      "confidence": 0.83,
+      "zone_id": null,
+      "clip_url": "/mock/clips/e3.mp4",
+      "reviewed": true
+    }
+  ]
+}
