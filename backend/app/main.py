@@ -9,7 +9,7 @@ from app.db import models  # noqa: F401  (registers the tables)
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Child Day API", version="0.1.0")
+app = FastAPI(title="Kanaf API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -19,6 +19,11 @@ app.add_middleware(
 
 for module in (children, jobs, sessions, live, insights):
     app.include_router(module.router)
+
+
+@app.get("/")
+def root():
+    return {"name": "Kanaf API", "docs": "/docs"}
 
 
 @app.get("/health")

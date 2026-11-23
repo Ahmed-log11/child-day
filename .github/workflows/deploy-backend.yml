@@ -1,0 +1,32 @@
+name: Deploy backend to Hugging Face
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests before deploying
+        working-directory: backend
+        run: |
+          pip install fastapi "uvicorn[standard]" python-multipart pydantic-settings sqlalchemy pytest httpx
+          pytest -q
+
+      - name: Push backend/ to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git subtree split --prefix backend -b space
+          git push --force https://Ahmed-log:$HF_TOKEN@huggingface.co/spaces/Ahmed-log/kanaf-api space:main
