@@ -1,3 +1,9 @@
+---
+title: Kanaf API
+sdk: docker
+app_port: 7860
+---
+
 # Backend
 
 FastAPI app + the computer vision pipeline. Endpoints follow `docs/api.md`.
