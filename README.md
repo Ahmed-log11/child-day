@@ -4,7 +4,7 @@ A computer vision platform that turns a home camera feed into a clear picture of
 
 In this project the input is an uploaded video. In production it would be a live camera feed.
 
-**Live demo:** _link after deployment_
+**Live:** [kanaf-sa.vercel.app](https://kanaf-sa.vercel.app) · **API docs:** [ahmed-log-kanaf-api.hf.space/docs](https://ahmed-log-kanaf-api.hf.space/docs)
 
 ## How it works
 
@@ -26,7 +26,7 @@ Video → YOLO11 detect + pose + tracking → per-second states → smoothing �
 
 | Folder | What's in it |
 |---|---|
-| `docs/` | API contract (`api.md`) and architecture notes |
+| `docs/` | API contract (`api.md`), architecture, deployment, and a guide for each team member (`docs/team/`) |
 | `backend/` | FastAPI app, the CV pipeline, database, Dockerfile |
 | `frontend/` | React + Vite + Tailwind app |
 | `training/` | Colab notebooks for the models we train |
@@ -38,21 +38,23 @@ Video → YOLO11 detect + pose + tracking → per-second states → smoothing �
 - Never push to `main`. Work on a branch and open a pull request.
 - The API format lives in `docs/api.md`. If it changes, update `frontend/src/mocks/` in the same pull request.
 - Datasets, videos, model weights and `.env` are never committed.
+- New Python libraries go in `backend/requirements.txt`, or the server build fails.
+- Anything merged into `main` that touches `backend/` is tested and deployed to Hugging Face automatically.
 
 ## Start here
 
 1. Read `docs/api.md`. Every part of the project follows it.
-2. Find your files in the table below. Each function says what it takes, what it returns, and who owns it.
+2. Open your guide in the table below. It lists your files, what each function takes and returns, and what to do first.
 3. Prototype in a notebook if you like, then move the working code into your `.py` file.
 
 ## Team
 
-| Who | Owns | Files |
-|---|---|---|
-| Sulaiman | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` |
-| Nouf | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` |
-| Basma | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` |
-| Ahmed | Frontend, backend API, database, integration, deployment, reviews every pull request | `frontend/`, `backend/app/api/`, `backend/app/db/`, `backend/app/main.py`, `docs/` |
+| Who | Owns | Files | Guide |
+|---|---|---|---|
+| Sulaiman | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` | [p1-perception.md](docs/team/p1-perception.md) |
+| Nouf | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` | [p2-safety.md](docs/team/p2-safety.md) |
+| Basma | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` | [p4-data-and-proof.md](docs/team/p4-data-and-proof.md) |
+| Ahmed | Frontend, backend API, database, integration, deployment, reviews every pull request | `frontend/`, `backend/app/api/`, `backend/app/db/`, `backend/app/main.py`, `docs/` | [deployment.md](docs/deployment.md) |
 
 ## Running locally
 
@@ -73,7 +75,7 @@ Without Docker:
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload        # http://localhost:8000/docs
-pytest                               # run the tests
+python -m pytest                     # run the tests
 
 # frontend (in a second terminal)
 cd frontend
