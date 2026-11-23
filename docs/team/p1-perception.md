@@ -81,6 +81,8 @@ Important rules from the contract:
 - Follow `docs/api.md` exactly: times in seconds, boxes and keypoints normalized 0–1 as `[x1, y1, x2, y2]`, the exact state names (`tv`, `tablet`, `phone`, `multi_screen`, `none`, `active`, `light`, `still`, `fall`, `danger_zone`, `violent_contact`). If you need to change a shape, tell Ahmed first.
 - Don't rename functions or change their inputs/outputs without telling the team. Other people's code calls them.
 - Prototype in a notebook if you like. When it works, move the code into your `.py` file. The server only runs the `.py` files.
+- Any new Python library you use goes in `backend/requirements.txt`, or the server build fails.
+- Anything merged into `main` that touches `backend/` is tested and deployed to the live server automatically. Only open a PR when your code runs and `python -m pytest` passes.
 - Everyone in the demo video agreed to be filmed. No real children's footage in the repo or anything public.
 
 ## How the backend fits together

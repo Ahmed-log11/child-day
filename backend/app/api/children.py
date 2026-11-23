@@ -12,6 +12,16 @@ router = APIRouter(tags=["setup"])
 class ChildIn(BaseModel):
     name: str
     age_group: str  # "3-4" or "5-12"
+    color: str | None = None  # "#7B5CC6"
+
+
+class ChildUpdate(BaseModel):
+    name: str | None = None
+    color: str | None = None
+
+
+def _child(c: Child) -> dict:
+    return {"id": c.id, "name": c.name, "age_group": c.age_group, "color": c.color}
 
 
 class ZoneIn(BaseModel):
@@ -21,17 +31,30 @@ class ZoneIn(BaseModel):
 
 @router.get("/children")
 def list_children(db: DbSession = Depends(get_db)):
-    return [{"id": c.id, "name": c.name, "age_group": c.age_group} for c in db.query(Child).all()]
+    return [_child(c) for c in db.query(Child).all()]
 
 
 @router.post("/children")
 def create_child(body: ChildIn, db: DbSession = Depends(get_db)):
     if body.age_group not in ("3-4", "5-12"):
         raise HTTPException(422, "age_group must be '3-4' or '5-12'")
-    child = Child(name=body.name, age_group=body.age_group)
+    child = Child(name=body.name, age_group=body.age_group, color=body.color)
     db.add(child)
     db.commit()
-    return {"id": child.id, "name": child.name, "age_group": child.age_group}
+    return _child(child)
+
+
+@router.patch("/children/{child_id}")
+def update_child(child_id: str, body: ChildUpdate, db: DbSession = Depends(get_db)):
+    child = db.get(Child, child_id)
+    if not child:
+        raise HTTPException(404, "Child not found")
+    if body.name is not None:
+        child.name = body.name
+    if body.color is not None:
+        child.color = body.color
+    db.commit()
+    return _child(child)
 
 
 @router.get("/zones")

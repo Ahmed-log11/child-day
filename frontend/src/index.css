@@ -1,1 +1,56 @@
 @import "tailwindcss";
+
+/* Kanaf design tokens. Use them as Tailwind classes: bg-clay, text-ink, bg-screen... */
+@theme {
+  --font-sans: "Readex Pro", system-ui, sans-serif;
+
+  /* Brand */
+  --color-ink: #1c2430;
+  --color-body: #46505c;
+  --color-muted: #5a6370;
+  --color-line: #eae3da;
+  --color-page: #f8f5f0;
+  --color-cream: #fbf6ef;
+  --color-clay: #a9472a;
+  --color-clay-dark: #8c3a22;
+  --color-sun: #f2c14e;
+
+  /* Data: what happened (never good or bad) */
+  --color-screen: #2f4f86;
+  --color-screen-2: #1b2f55;
+  --color-screen-soft: #dce4f1;
+  --color-move: #1f9aa8;
+  --color-move-light: #b6e3e8;
+  --color-move-soft: #ddf0f2;
+  --color-move-text: #17707a;
+
+  /* Status: always shown with an icon and a word */
+  --color-ok: #256b4a;
+  --color-ok-soft: #e1f2ea;
+  --color-look: #d9961a;
+  --color-look-text: #83570c;
+  --color-look-soft: #faedd3;
+  --color-alert: #c23b3b;
+  --color-alert-text: #a22c2c;
+  --color-alert-soft: #f9dfdf;
+}
+
+html,
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 2px;
+}

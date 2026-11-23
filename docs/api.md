@@ -31,12 +31,15 @@ This file is the agreement between the backend and the frontend. Change it only 
 
 `POST /children`
 ```json
-{ "name": "Sara", "age_group": "5-12" }
+{ "name": "Sara", "age_group": "5-12", "color": "#7B5CC6" }
 ```
 → the created child:
 ```json
-{ "id": "c1", "name": "Sara", "age_group": "5-12" }
+{ "id": "c1", "name": "Sara", "age_group": "5-12", "color": "#7B5CC6" }
 ```
+`color` is optional. It's the child's identity color, picked in setup and used only for their avatar, page tint and video boxes.
+
+`PATCH /children/{child_id}` with any of `name`, `color` → the updated child.
 
 ### Danger zones (setup screen)
 Zones belong to the room, not to a child. `polygon` is a list of `[x, y]` points, normalized.

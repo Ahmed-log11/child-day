@@ -17,6 +17,7 @@ class Child(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: new_id("c"))
     name: Mapped[str] = mapped_column(String)
     age_group: Mapped[str] = mapped_column(String)  # "3-4" or "5-12"
+    color: Mapped[str | None] = mapped_column(String, nullable=True)  # "#7B5CC6", chosen in setup
 
 
 class Zone(Base):

@@ -13,7 +13,10 @@ def test_health():
 
 
 def test_create_child_and_zone():
-    child = client.post("/children", json={"name": "Sara", "age_group": "5-12"}).json()
+    child = client.post("/children", json={"name": "Sara", "age_group": "5-12", "color": "#7B5CC6"}).json()
+    assert child["color"] == "#7B5CC6"
+    updated = client.patch(f"/children/{child['id']}", json={"color": "#B5508C"}).json()
+    assert updated["color"] == "#B5508C"
     assert child["id"].startswith("c_")
     zone = client.post("/zones", json={"name": "Kitchen", "polygon": [[0, 0], [1, 0], [1, 1]]}).json()
     assert zone["id"].startswith("z_")

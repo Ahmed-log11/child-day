@@ -1,0 +1,402 @@
+{
+  "brand": {
+    "name": "Kanaf",
+    "tagline": "Their day, in your care"
+  },
+  "lang": {
+    "switch": "العربية",
+    "label": "Switch language"
+  },
+  "nav": {
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "review": "To review",
+    "children": "Children",
+    "ask": "Ask",
+    "goLive": "Go live",
+    "upload": "Upload video",
+    "menu": "Main menu"
+  },
+  "children": {
+    "add": "Add",
+    "label": "Child"
+  },
+  "today": {
+    "title": "{name}’s day",
+    "summary": "{name}: {screen} on screens out of {duration} we saw, including {multi} on two screens at once. {active} of active play, and {moments} worth a look.",
+    "summaryNoMoments": "{name}: {screen} on screens out of {duration} we saw, including {multi} on two screens at once. {active} of active play, and nothing to check.",
+    "moments": "{count} moments",
+    "moment": "1 moment",
+    "stats": {
+      "screen": "Screen time",
+      "screenNote": "{pct}% of the time we saw",
+      "multi": "Two screens at once",
+      "multiNote": "TV with a tablet or phone",
+      "active": "Active play",
+      "activeNote": "{pct}% of the time we saw",
+      "moments": "Moments",
+      "momentsNote": "{open} still to check"
+    },
+    "timeline": {
+      "title": "Hour by hour",
+      "screens": "Screens",
+      "moving": "Moving",
+      "moments": "Moments",
+      "drag": "Drag through the video",
+      "legend": {
+        "screen": "Screen",
+        "multi": "Two at once",
+        "active": "Active",
+        "light": "Light",
+        "look": "Worth a look",
+        "alert": "Check now"
+      }
+    },
+    "breakdown": {
+      "title": "Where the screen time went",
+      "longest": "Longest still stretch: {duration}, starting at {time}."
+    },
+    "list": {
+      "title": "Moments",
+      "note": "Flagged for you to check. Not a verdict.",
+      "empty": "Nothing to check today.",
+      "watch": "Watch",
+      "reviewAll": "Review them"
+    },
+    "privacy": "We see body outlines and movement, never faces. Only short clips of flagged moments are kept."
+  },
+  "screen": {
+    "tv": "TV",
+    "tablet": "Tablet",
+    "phone": "Phone",
+    "multi_screen": "Two screens at once",
+    "none": "No screen"
+  },
+  "activity": {
+    "active": "Active",
+    "light": "Moving a little",
+    "still": "Sitting still"
+  },
+  "now": {
+    "tv": "Watching TV",
+    "tablet": "On the tablet",
+    "phone": "On the phone",
+    "multi_screen": "On two screens at once",
+    "none": "Off screens",
+    "active": "moving a lot",
+    "light": "moving a little",
+    "still": "sitting still",
+    "sentence": "{screen}, {activity}"
+  },
+  "event": {
+    "fall": "Possible fall",
+    "danger_zone": "Went into a marked area",
+    "violent_contact": "Rough play",
+    "duration": "{time} · {length}",
+    "desc": {
+      "fall": "{name} went down quickly and stayed down for a few seconds.",
+      "danger_zone": "{name} stayed inside an area you marked for a while.",
+      "violent_contact": "Two children were close together and moving fast. It may be play, or it may be a fight."
+    },
+    "who": "{name} · {time}"
+  },
+  "status": {
+    "ok": "All good",
+    "look": "Worth a look",
+    "alert": "Check now",
+    "reviewed": "Reviewed"
+  },
+  "time": {
+    "h": "{h}h",
+    "hm": "{h}h {m}m",
+    "m": "{m} min",
+    "s": "{s} s"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Couldn’t load this. Try again.",
+    "comingSoon": "This screen is coming in the next batch."
+  },
+  "overlay": {
+    "tvOn": "TV · on",
+    "tvOff": "TV · off",
+    "tablet": "Tablet",
+    "phone": "Phone"
+  },
+  "review": {
+    "back": "Back to the day",
+    "play": "Play",
+    "pause": "Pause",
+    "boxes": "Boxes",
+    "outlines": "Body outlines",
+    "flagged": "Colored parts of the bar are flagged moments.",
+    "noVideo": "Demo view: the video file isn’t attached, so we show what the system saw.",
+    "length": "Length",
+    "sure": "How sure",
+    "sureValue": "{pct}%",
+    "question": "What was it?",
+    "fine": "Just fine",
+    "follow": "I’ll follow up",
+    "answerNote": "Your answer marks it reviewed. Only this short clip is kept, never the full video.",
+    "reviewedNote": "You reviewed this moment.",
+    "undo": "Mark as not reviewed",
+    "others": "Other moments in this video",
+    "pick": "Pick a moment on the bar to see its details."
+  },
+  "quick": {
+    "title": "To review",
+    "count": "{n} of {total}",
+    "question": "Was this OK?",
+    "fine": "Yes, all fine",
+    "follow": "No, I’ll follow up",
+    "watch": "Watch the clip",
+    "doneTitle": "All caught up",
+    "doneText": "You checked every moment. Your answers help us flag better.",
+    "again": "See them again",
+    "reviewedList": "Already reviewed",
+    "note": "Flagged for you to check. Not a verdict."
+  },
+  "upload": {
+    "title": "Add a day",
+    "intro": "Upload a video from your home camera. We turn it into a timeline and keep only short clips of moments worth a look.",
+    "drop": "Drop a video here, or choose a file",
+    "dropHint": "MP4 or MOV, filmed from one fixed spot",
+    "change": "Choose another video",
+    "date": "Day of the video",
+    "who": "Who is in it",
+    "noChildren": "Add your children first.",
+    "addChildren": "Set up children",
+    "zones": "Spots to watch are set in setup.",
+    "editZones": "Edit",
+    "analyze": "Analyze video",
+    "sending": "Uploading…",
+    "error": "The upload didn’t go through: {msg}",
+    "notVideo": "Please choose a video file.",
+    "orLive": "Or watch live with your camera",
+    "firstFrame": "First frame of your video"
+  },
+  "processing": {
+    "title": "Reading your video",
+    "left": "You can leave this page. It keeps going.",
+    "steps": [
+      "Video received",
+      "Finding people and screens",
+      "Following each child",
+      "Checking movement and safety",
+      "Writing the day’s report"
+    ],
+    "done": "Done. Opening the day…",
+    "open": "Open the day",
+    "failed": "Something went wrong: {msg}",
+    "retry": "Try another video"
+  },
+  "live": {
+    "title": "Live",
+    "intro": "Your webcam, read a few times per second. When you stop, it becomes a normal day.",
+    "start": "Start live",
+    "stop": "Stop and save",
+    "starting": "Starting…",
+    "stopping": "Saving…",
+    "camera": "Allow the camera when your browser asks.",
+    "cameraError": "We couldn’t open the camera: {msg}",
+    "socketError": "Lost the connection to the server.",
+    "waiting": "Waiting for the first results…",
+    "nobody": "No one in view yet.",
+    "recording": "Nothing is recorded while live. Only a short clip is saved if a moment is flagged.",
+    "badge": "Live",
+    "since": "Live for {time}"
+  },
+  "range": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "label": "Range"
+  },
+  "days": {
+    "short": [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ]
+  },
+  "week": {
+    "title": "{name}’s week",
+    "summary": "{name} averaged {screen} of screens a day, and reached the activity goal on {goal}. {moments} were flagged this week.",
+    "goalDays": "{n} of {total} days",
+    "stats": {
+      "screen": "Screens, daily average",
+      "active": "Active, daily average",
+      "multi": "Two screens at once",
+      "moments": "Moments",
+      "activeNote": "Goal: {goal} a day",
+      "multiNote": "in total this week",
+      "momentsNote": "this week"
+    },
+    "chart": "Day by day",
+    "screen": "Screen time",
+    "active": "Active minutes",
+    "demo": "Earlier days are sample data for the demo.",
+    "weekend": "Shaded days are the weekend."
+  },
+  "month": {
+    "title": "{name}’s month",
+    "summary": "Each square is one day. {name} spent the most time on screens on {day}, and moved the most on {active}.",
+    "legend": {
+      "screen": "Screen time",
+      "active": "Active vs goal",
+      "moment": "Moment flagged"
+    },
+    "empty": "No data"
+  },
+  "child": {
+    "since": "Followed for {n} days",
+    "age": "Age group",
+    "ages": {
+      "3-4": "3 to 4",
+      "5-12": "5 to 12"
+    },
+    "color": "Color",
+    "stats": {
+      "screen": "Screens, daily average",
+      "active": "Active, daily average",
+      "favorite": "Most-used screen",
+      "moments": "Moments flagged"
+    },
+    "favoriteNote": "{pct}% of screen time",
+    "activeNote": "WHO goal: {goal} a day",
+    "momentsNote": "in the last {n} days",
+    "trend": "Last 7 days",
+    "seeToday": "See today",
+    "saved": "Saved",
+    "edit": "Edit in setup",
+    "colorNote": "Used for {name}’s avatar, page color and video boxes.",
+    "pick": "Children"
+  },
+  "ask": {
+    "title": "Ask about your children’s days",
+    "intro": "Answers come only from the reports Kanaf made, so you can always see where a number came from.",
+    "label": "Your question",
+    "placeholder": "Is Sara’s screen time going up?",
+    "send": "Ask",
+    "thinking": "Thinking…",
+    "suggestions": [
+      "Is screen time going up this week?",
+      "When is Omar most active?",
+      "What happened on Friday?",
+      "Compare Sara and Omar this week"
+    ],
+    "sources": "Based on:",
+    "empty": "Type a question first.",
+    "error": "Couldn’t get an answer: {msg}",
+    "note": "Kanaf describes what it saw. It doesn’t give medical or parenting advice."
+  },
+  "setup": {
+    "title": "Set up your home",
+    "intro": "Tell us who lives here and which spots need extra care. You can change this anytime.",
+    "steps": [
+      "Children",
+      "Room",
+      "First video"
+    ],
+    "children": "Children",
+    "childrenNote": "Each child gets a color, so you can tell them apart everywhere.",
+    "name": "Name",
+    "namePlaceholder": "Layla",
+    "age": "Age",
+    "add": "Add child",
+    "adding": "Adding…",
+    "needName": "Enter a name first.",
+    "colorOf": "{name}’s color",
+    "noChildren": "No children yet. Add the first one.",
+    "zones": "Spots to watch",
+    "zonesNote": "Draw around places a child shouldn’t go alone. We flag it if they stay inside for a few seconds.",
+    "from": "Draw on a frame from:",
+    "fromVideo": "A video",
+    "fromCamera": "The camera",
+    "takePhoto": "Take the frame",
+    "cancel": "Cancel",
+    "drawHint": "Tap the corners of the area, at least 3. Include the floor, so we can see feet entering it.",
+    "zoneName": "Zone name",
+    "zonePlaceholder": "Kitchen",
+    "undo": "Undo point",
+    "clear": "Start over",
+    "saveZone": "Save zone",
+    "needPoints": "Tap at least 3 corners first.",
+    "needZoneName": "Give the zone a name.",
+    "delete": "Delete",
+    "noZones": "No zones yet.",
+    "noFrame": "Pick a video or use the camera to get a frame of the room.",
+    "continue": "Continue to first video",
+    "cameraError": "We couldn’t open the camera: {msg}",
+    "error": "Couldn’t save: {msg}",
+    "offline": "Setup saves to the server. Check your connection: {msg}"
+  },
+  "landing": {
+    "nav": {
+      "how": "How it works",
+      "privacy": "Privacy",
+      "sample": "See a sample day",
+      "start": "Get started"
+    },
+    "headline": "Your child’s day, in your care.",
+    "sub": "Kanaf turns your home camera into a calm picture of the day: time on every screen, how much they moved, and the few moments worth a look. All in one place.",
+    "ages": "For parents of children aged 3 to 12",
+    "preview": {
+      "title": "Sara’s Tuesday",
+      "meta": "3h 10m screens · 42 min active",
+      "moments": "2 moments worth a look"
+    },
+    "features": [
+      {
+        "title": "Every screen, counted",
+        "text": "TV, tablet and phone, and the time spent on two at once."
+      },
+      {
+        "title": "How much they moved",
+        "text": "Active play, light movement and long still stretches, next to the WHO goal for their age."
+      },
+      {
+        "title": "A few moments worth a look",
+        "text": "Falls, a visit to a spot you marked, or rough play. Flagged with a short clip for you to judge."
+      }
+    ],
+    "howTitle": "How it works",
+    "howSub": "Computer vision does the watching, so you only read the result.",
+    "steps": [
+      {
+        "title": "Add a video, or go live",
+        "text": "Upload a recording from your home camera, or use your webcam."
+      },
+      {
+        "title": "We find people and screens",
+        "text": "Each child is tracked as a body outline. TVs, tablets and phones are found around them."
+      },
+      {
+        "title": "The day becomes a timeline",
+        "text": "Screens, movement and moments, minute by minute. No full video is kept."
+      },
+      {
+        "title": "You check a few moments",
+        "text": "Short clips of anything worth a look. You decide what it was."
+      }
+    ],
+    "privacyTitle": "We see movement, not faces.",
+    "privacy": [
+      "Children are tracked as body outlines, the same lines you see on this page.",
+      "The full video is never stored. Only short clips of flagged moments.",
+      "Every flag is a question for you, not a verdict about your child.",
+      "Delete any day, clip or child at any time."
+    ],
+    "chips": {
+      "look": "Kitchen zone · 12:40",
+      "alert": "Possible fall · 14:05",
+      "ok": "Reviewed, all fine"
+    },
+    "footer": "A computer vision project, Tuwaiq Academy 2026"
+  }
+}
