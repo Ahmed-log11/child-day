@@ -49,9 +49,9 @@ Video → YOLO11 detect + pose + tracking → per-second states → smoothing �
 
 | Who | Owns | Files |
 |---|---|---|
-| P1 | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` |
-| P2 | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` |
-| P4 | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` |
+| Sulaiman | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` |
+| Nouf | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` |
+| Basma | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` |
 | Ahmed | Frontend, backend API, database, integration, deployment, reviews every pull request | `frontend/`, `backend/app/api/`, `backend/app/db/`, `backend/app/main.py`, `docs/` |
 
 ## Running locally
