@@ -22,7 +22,7 @@ jobs:
         working-directory: backend
         run: |
           pip install fastapi "uvicorn[standard]" python-multipart pydantic-settings sqlalchemy pytest httpx
-          pytest -q
+          python -m pytest -q
 
       - name: Push backend/ to the Space
         env:
