@@ -26,8 +26,12 @@ DETECT_WEIGHTS = "yolo11n.pt"            # pretrained COCO detector
 POSE_WEIGHTS = "yolo11n-pose.pt"         # pretrained COCO pose (17 keypoints)
 # P4's fine-tuned tablet detector. First file/folder found is used; none found = fallback below.
 TABLET_WEIGHTS = ["tablet_openvino_model", "tablet.pt", "yolo11n_tablet.pt", "best.pt"]
+# Off for now: on a wide room view the fine-tuned model marks the TV, doorways and cushions as
+# tablets and misses the real one. COCO sees a hand-held tablet as a small "laptop" (below).
+USE_TABLET_MODEL = False
 
-IMGSZ = 480                 # 480 or 416 keeps it fast on a free CPU
+IMGSZ = 480                 # 480 or 416 keeps it fast on a free CPU (pose + tracking)
+OBJECT_IMGSZ = 960          # objects are small (a tablet in a hand): detect them at a higher resolution
 DEVICE = "cpu"
 OBJECT_CONF = 0.30          # min confidence for COCO objects
 TABLET_CONF = 0.35          # min confidence for the tablet model
@@ -51,6 +55,11 @@ OBJECT_LABELS = {
 # frame area is treated as a tablet.
 BIG_PHONE_AS_TABLET = True
 TABLET_MIN_AREA = 0.006
+# COCO calls a tablet held in the hands a "laptop". A real laptop is bigger than this.
+SMALL_LAPTOP_AS_TABLET = True
+TABLET_MAX_AREA = 0.02
+# Two boxes of the same label overlapping this much are the same object (e.g. one TV seen twice).
+SAME_OBJECT_IOU = 0.5
 # A phone box overlapping a tablet box this much is the same device -> keep the tablet.
 TABLET_PHONE_IOU = 0.45
 
@@ -93,7 +102,7 @@ def load_models() -> dict:
 
         _models["detect"] = YOLO(_resolve(DETECT_WEIGHTS), task="detect")
         _models["pose"] = YOLO(_resolve(POSE_WEIGHTS), task="pose")
-        tablet_path = _find_tablet_weights()
+        tablet_path = _find_tablet_weights() if USE_TABLET_MODEL else None
         _models["tablet"] = YOLO(tablet_path, task="detect") if tablet_path else None
     return _models
 
@@ -149,7 +158,7 @@ def detect_objects(frame) -> list[dict]:
     models = load_models()
 
     objects: list[dict] = []
-    result = models["detect"].predict(frame, imgsz=IMGSZ, conf=OBJECT_CONF, device=DEVICE, verbose=False)[0]
+    result = models["detect"].predict(frame, imgsz=OBJECT_IMGSZ, conf=OBJECT_CONF, device=DEVICE, verbose=False)[0]
     names = result.names
     if result.boxes is not None and len(result.boxes):
         boxes = result.boxes.xyxyn.cpu().numpy()
@@ -162,12 +171,14 @@ def detect_objects(frame) -> list[dict]:
             box = _r(box)
             if label == "phone" and BIG_PHONE_AS_TABLET and models["tablet"] is None and _area(box) >= TABLET_MIN_AREA:
                 label = "tablet"
+            if label == "laptop" and SMALL_LAPTOP_AS_TABLET and _area(box) <= TABLET_MAX_AREA:
+                label = "tablet"
             objects.append({"label": label, "box": box, "confidence": round(float(conf), 3)})
 
     # P4's tablet model (COCO has no tablet class)
     tablet_model = models["tablet"]
     if tablet_model is not None:
-        tres = tablet_model.predict(frame, imgsz=IMGSZ, conf=TABLET_CONF, device=DEVICE, verbose=False)[0]
+        tres = tablet_model.predict(frame, imgsz=OBJECT_IMGSZ, conf=TABLET_CONF, device=DEVICE, verbose=False)[0]
         tnames = tres.names
         tablet_ids = {i for i, n in tnames.items() if "tablet" in str(n).lower()} or set(tnames)
         tablets = []
@@ -182,7 +193,16 @@ def detect_objects(frame) -> list[dict]:
                 o["label"] == "phone" and any(_iou(o["box"], t["box"]) >= TABLET_PHONE_IOU for t in tablets))]
             objects.extend(tablets)
 
-    return objects
+    return _dedupe(objects)
+
+
+def _dedupe(objects: list[dict]) -> list[dict]:
+    """Keep one box per object: drop a box that overlaps a stronger box with the same label."""
+    kept: list[dict] = []
+    for o in sorted(objects, key=lambda x: -x["confidence"]):
+        if not any(k["label"] == o["label"] and _iou(k["box"], o["box"]) >= SAME_OBJECT_IOU for k in kept):
+            kept.append(o)
+    return kept
 
 
 def detect_people(frame) -> list[dict]:

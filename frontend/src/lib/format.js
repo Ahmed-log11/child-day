@@ -11,6 +11,12 @@ export function duration(t, seconds) {
 }
 
 export function clock(locale, startedAt, offsetSeconds = 0) {
+  // A video without a recorded start time (an upload): show the position in the video, like 01:05
+  if (!startedAt) {
+    const s = Math.max(0, Math.round(offsetSeconds));
+    const two = new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, useGrouping: false });
+    return `${two.format(Math.floor(s / 60))}:${two.format(s % 60)}`;
+  }
   const date = new Date(new Date(startedAt).getTime() + offsetSeconds * 1000);
   return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }

@@ -46,9 +46,9 @@ ACTIVITY_AVG_S = 2.0          # movement is averaged over this window before act
 MAX_MOVE_DT = 2.0             # frames further apart than this are not compared
 
 # smoothing windows (seconds)
-SCREEN_WINDOW_S = 10.0
-ACTIVITY_WINDOW_S = 10.0
-PRESENCE_WINDOW_S = 5.0
+SCREEN_WINDOW_S = 3.0         # short, so a few seconds on a tablet still show
+ACTIVITY_WINDOW_S = 4.0
+PRESENCE_WINDOW_S = 3.0
 
 # safety events
 EVENT_GAP_S = 2.0             # an event closes after it has been inactive this long
@@ -294,6 +294,8 @@ class Engine:
                     a, b = people[i], people[j]
                     if not (a.get("child_id") or b.get("child_id")):
                         continue
+                    if "active" not in (a.get("activity"), b.get("activity")):
+                        continue  # nobody is moving fast: sitting or hugging is not rough play
                     h = ((a["box"][3] - a["box"][1]) + (b["box"][3] - b["box"][1])) / 2.0
                     if _dist(_center(a["box"]), _center(b["box"])) < CONTACT_DIST * max(h, 1e-3):
                         close_pair = (a, b)
