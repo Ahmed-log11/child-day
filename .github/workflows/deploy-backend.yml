@@ -21,7 +21,7 @@ jobs:
       - name: Run tests before deploying
         working-directory: backend
         run: |
-          pip install fastapi "uvicorn[standard]" python-multipart pydantic-settings sqlalchemy pytest httpx
+          pip install fastapi "uvicorn[standard]" python-multipart pydantic-settings sqlalchemy pytest httpx "numpy<2.2" opencv-python-headless
           python -m pytest -q
 
       - name: Push backend/ to the Space
