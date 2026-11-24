@@ -35,6 +35,9 @@ for module in (children, jobs, sessions, live, insights):
 # Uploaded videos (and later alert clips), so the review screen can play them
 settings.storage_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=settings.storage_dir), name="media")
+# Short clips around alerts (storage.save_clip returns /clips/<name>)
+(settings.storage_dir / "clips").mkdir(parents=True, exist_ok=True)
+app.mount("/clips", StaticFiles(directory=settings.storage_dir / "clips"), name="clips")
 
 
 @app.get("/")

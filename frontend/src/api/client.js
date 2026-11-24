@@ -49,9 +49,14 @@ export const getJob = (jobId) => request(`/jobs/${jobId}`);
 
 // ---- Reports
 // id "latest" = the newest analyzed session (the backend falls back to the demo one).
-// Uploaded videos are served by the backend under /media, so their URL gets the API address.
-const withVideoUrl = (s) =>
-  s.video?.url?.startsWith("/media") ? { ...s, video: { ...s.video, url: `${API_URL}${s.video.url}` } } : s;
+// Uploaded videos (/media) and alert clips (/clips) are served by the backend, so they get its address.
+const served = (url) => (url && /^\/(media|clips)\//.test(url) ? `${API_URL}${url}` : url);
+const withClip = (e) => ({ ...e, clip_url: served(e.clip_url) });
+const withVideoUrl = (s) => ({
+  ...s,
+  video: s.video ? { ...s.video, url: served(s.video.url) } : s.video,
+  events: (s.events ?? []).map(withClip),
+});
 
 export const getSession = (id) =>
   USE_MOCKS ? Promise.resolve(mockSession()) : request(`/sessions/${id}`).then(withVideoUrl);
@@ -95,7 +100,7 @@ export const getSummary = ({ range = "week", childId, endDate } = {}) => Promise
 export const getAlerts = (range = "week") =>
   USE_MOCKS
     ? Promise.resolve(mockEvents().map((e) => ({ ...e, session_id: sessionReport.id, date: sessionReport.date })))
-    : request(`/alerts?range=${range}`);
+    : request(`/alerts?range=${range}`).then((list) => list.map(withClip));
 
 export async function markAlertReviewed(id, value = true) {
   let result;

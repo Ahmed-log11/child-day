@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
-# System libraries OpenCV needs
-RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
+# System libraries OpenCV needs, and ffmpeg for the alert clips (H.264, plays in every browser)
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Hugging Face runs containers as user 1000

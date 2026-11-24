@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { getAlerts, getSession, markAlertReviewed } from "../api/client";
+import { getAlerts, getSession, markAlertReviewed, USE_MOCKS } from "../api/client";
 import { useData } from "../lib/useData";
 import { childTheme, severity } from "../lib/children";
 import { clock, duration } from "../lib/format";
@@ -94,7 +94,11 @@ export default function Alerts() {
             </div>
           </div>
           <div className="rounded-[20px] bg-[#16181D] px-4 pt-4 pb-2.5">
-            <Scene event={current} children={children} />
+            {!USE_MOCKS && current.clip_url ? (
+              <video key={current.id} src={current.clip_url} controls muted playsInline className="aspect-video w-full rounded-xl bg-black" />
+            ) : (
+              <Scene event={current} children={children} />
+            )}
             <div className="flex justify-between px-1 pt-2 text-xs text-[#9BA1AD]">
               <span>{clock(locale, session.started_at, current.start_s)}</span>
               <span>{duration(t, current.end_s - current.start_s)}</span>

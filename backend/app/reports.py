@@ -15,7 +15,7 @@ def frames_path(session_id: str) -> Path:
     return folder / f"{session_id}.json"
 
 
-def save_report(db: DbSession, report: dict, frames: dict, *, source: str,
+def save_report(db: DbSession, report: dict, frames: dict | None, *, source: str,
                 session_date: date, video_url: str | None = None) -> SessionRow:
     """Store the Engine's report as a new session. Returns the saved row."""
     row = SessionRow(date=session_date, source=source)
@@ -40,7 +40,8 @@ def save_report(db: DbSession, report: dict, frames: dict, *, source: str,
     row.report = report
     db.commit()
 
-    frames_path(sid).write_text(json.dumps(frames))
+    if frames is not None:  # an upload writes its frames file itself (run_video)
+        frames_path(sid).write_text(json.dumps(frames))
     return row
 
 

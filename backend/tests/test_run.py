@@ -17,6 +17,9 @@ class FakeEngine:
     def finish(self):
         return {"times": self.times}
 
+    def get_frames(self):
+        return {"analyzed_fps": 3.0, "frames": [{"t": t} for t in self.times]}
+
 
 def make_video(path, seconds=3, fps=30):
     # Creates a tiny black test video
@@ -38,4 +41,19 @@ def test_run_video_keeps_three_frames_per_second(tmp_path, monkeypatch):
     assert result["times"][0] == 0
     assert result["times"][1] == pytest.approx(10 / 30)
     assert progress[0] == (0, "Video received")
-    assert progress[-1][0] == 100
+    assert progress[-1][0] == 100   
+
+
+
+
+def test_run_video_saves_frames(tmp_path, monkeypatch):
+    monkeypatch.setattr(run_module, "Engine", FakeEngine)
+    video = tmp_path / "test.avi"
+    make_video(video)
+    out = tmp_path / "frames" / "s1.json"
+
+    run_module.run_video(str(video), [], [], lambda p, s: None, frames_path=str(out))
+
+    import json
+    saved = json.loads(out.read_text())
+    assert len(saved["frames"]) == 9

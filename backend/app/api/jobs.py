@@ -1,13 +1,15 @@
 """Upload + processing screens: POST /analyze and GET /jobs/{id}.
 
-The background task runs the real pipeline (app/pipeline/run.py) and saves the report.
+The background task runs the real pipeline (app/pipeline/run.py), cuts a short clip around
+each alert (app/storage.py) and saves the report. The full video is kept so the review
+screen can play it under the overlays.
 With USE_MOCK_PIPELINE=true (the default, used by the tests) it only simulates progress
 and points to the mock session.
 """
 import shutil
-from pathlib import Path
 import time
 from datetime import date
+from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
@@ -17,7 +19,9 @@ from sqlalchemy.orm import Session as DbSession
 from app.config import settings
 from app.db.models import Child, Job, Zone
 from app.db.session import SessionLocal, get_db
-from app.reports import save_report
+from app.pipeline.run import run_video
+from app.reports import frames_path, save_report
+from app.storage import cut_clip, save_clip
 
 router = APIRouter(tags=["analyze"])
 
@@ -32,19 +36,41 @@ def _mock_run(db, job) -> str:
     return "s1"
 
 
-def _real_run(db, job, video_path: str, session_date: date) -> str:
-    from app.pipeline.run import run_video  # loads the models only when really needed
+def _add_clips(video_path: str, events: list[dict], prefix: str) -> None:
+    """A short clip around each alert (P4's storage.py). An alert without a clip still shows."""
+    for e in events:
+        name = f"{prefix}_{e['id']}.mp4"
+        try:
+            tmp = settings.storage_dir / "tmp" / name
+            cut_clip(video_path, e["start_s"], e["end_s"], str(tmp))
+            e["clip_url"] = save_clip(str(tmp), name)
+        except Exception:
+            e["clip_url"] = None
 
+
+def _real_run(db, job, video_path: str, session_date: date) -> str:
     children = [{"id": c.id, "name": c.name, "age_group": c.age_group} for c in db.scalars(select(Child))]
     zones = [{"id": z.id, "name": z.name, "polygon": z.polygon} for z in db.scalars(select(Zone))]
 
-    def on_progress(percent: int, step: str) -> None:
-        job.progress, job.step = int(percent), step
-        db.commit()
+    last = {"p": -1}
 
-    report, frames = run_video(video_path, children, zones, on_progress, return_frames=True)
+    def on_progress(percent: int, step: str) -> None:
+        if percent != last["p"]:  # write to the database only when the percent changes
+            last["p"] = percent
+            job.progress, job.step = int(percent), step
+            db.commit()
+
+    tmp_frames = settings.storage_dir / "frames" / f"{job.id}.json"
+    report = run_video(video_path, children, zones, on_progress, frames_path=str(tmp_frames))
+
+    job.step = "Saving short clips of flagged moments"
+    db.commit()
+    _add_clips(video_path, report.get("events", []), job.id)
+
     video_url = f"/media/uploads/{quote(Path(video_path).name)}"
-    row = save_report(db, report, frames, source="upload", session_date=session_date, video_url=video_url)
+    row = save_report(db, report, None, source="upload", session_date=session_date, video_url=video_url)
+    if tmp_frames.exists():
+        tmp_frames.replace(frames_path(row.id))
     return row.id
 
 
@@ -61,12 +87,11 @@ def process_video(job_id: str, video_path: str, session_date: date) -> None:
         job.status, job.progress, job.step, job.session_id = "done", 100, "Done", session_id
         db.commit()
     except Exception as exc:  # report the failure to the frontend instead of hanging
+        db.rollback()
         job.status, job.error = "failed", str(exc)
         db.commit()
     finally:
         db.close()
-
-
 @router.post("/analyze")
 def analyze(
     background: BackgroundTasks,
