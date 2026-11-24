@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session as DbSession
 
 from app.config import settings
+from app.db.models import Child
 from app.db.models import Session as SessionRow
 
 
@@ -24,6 +25,9 @@ def save_report(db: DbSession, report: dict, frames: dict | None, *, source: str
     sid = row.id
 
     report = dict(report)
+    # Each child's color from Setup, so every page shows the same color for the same child
+    colors = {c.id: c.color for c in db.query(Child).all()}
+    report["children"] = [{**c, "color": c.get("color") or colors.get(c["id"])} for c in report.get("children", [])]
     video = dict(report.get("video") or {})
     video["url"] = video_url
     report.update({
