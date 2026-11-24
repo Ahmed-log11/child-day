@@ -21,7 +21,7 @@ function Strong({ className, children }) {
 
 export default function Dashboard() {
   const { t, locale } = useI18n();
-  const { data: session, error, loading } = useData(() => getSession("s1"), []);
+  const { data: session, error, loading } = useData(() => getSession("latest"), []);
   useColorVersion();
   const children = session?.children ?? [];
   const [child, setChildId] = useSelectedChild(children);

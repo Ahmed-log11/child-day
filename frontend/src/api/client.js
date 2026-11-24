@@ -1,6 +1,7 @@
 // Every call to the backend lives here. Shapes follow docs/api.md.
 // While VITE_USE_MOCKS is not "false", reports come from the mock files instead of the backend.
 // Upload, jobs and live always talk to the real backend.
+// The week/month summary is always sample history (see mockSummary).
 import sessionReport from "../mocks/session_report.json";
 import summaryWeek from "../mocks/summary_week.json";
 import { buildFrames } from "../mocks/frames";
@@ -47,7 +48,13 @@ export function analyzeVideo(file, sessionDate) {
 export const getJob = (jobId) => request(`/jobs/${jobId}`);
 
 // ---- Reports
-export const getSession = (id) => (USE_MOCKS ? Promise.resolve(mockSession()) : request(`/sessions/${id}`));
+// id "latest" = the newest analyzed session (the backend falls back to the demo one).
+// Uploaded videos are served by the backend under /media, so their URL gets the API address.
+const withVideoUrl = (s) =>
+  s.video?.url?.startsWith("/media") ? { ...s, video: { ...s.video, url: `${API_URL}${s.video.url}` } } : s;
+
+export const getSession = (id) =>
+  USE_MOCKS ? Promise.resolve(mockSession()) : request(`/sessions/${id}`).then(withVideoUrl);
 
 export function getFrames(id) {
   if (!USE_MOCKS) return request(`/sessions/${id}/frames`);
@@ -81,10 +88,9 @@ function mockSummary(range) {
   return { ...summaryWeek, range: "month", start_date: days.at(-1).date, days };
 }
 
-export const getSummary = ({ range = "week", childId, endDate } = {}) =>
-  USE_MOCKS
-    ? Promise.resolve(mockSummary(range))
-    : request(`/summary?range=${range}${childId ? `&child_id=${childId}` : ""}${endDate ? `&end_date=${endDate}` : ""}`);
+// Week and month show sample history on purpose: one uploaded video is only one day.
+// eslint-disable-next-line no-unused-vars
+export const getSummary = ({ range = "week", childId, endDate } = {}) => Promise.resolve(mockSummary(range));
 
 export const getAlerts = (range = "week") =>
   USE_MOCKS

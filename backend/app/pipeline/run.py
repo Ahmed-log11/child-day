@@ -15,7 +15,7 @@ def _step_name(percent: int) -> str:
     return "Checking movement and safety"
 
 
-def run_video(video_path: str, children: list[dict], zones: list[dict], on_progress) -> dict:
+def run_video(video_path: str, children: list[dict], zones: list[dict], on_progress, return_frames: bool = False):
     # Opens the video, fails with a clear message if it can't be read
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -49,6 +49,8 @@ def run_video(video_path: str, children: list[dict], zones: list[dict], on_progr
         on_progress(96, "Writing the day's report")
         report = engine.finish()
         on_progress(100, "Done")
+        if return_frames:  # the API also saves the overlays for the review screen
+            return report, engine.get_frames()
         return report
     finally:
         cap.release()

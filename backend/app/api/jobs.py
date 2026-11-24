@@ -1,22 +1,51 @@
 """Upload + processing screens: POST /analyze and GET /jobs/{id}.
 
-For now the background task only simulates progress and points to the mock session.
-P4 replaces `process_video` with a call to the real pipeline (app/pipeline/run.py).
+The background task runs the real pipeline (app/pipeline/run.py) and saves the report.
+With USE_MOCK_PIPELINE=true (the default, used by the tests) it only simulates progress
+and points to the mock session.
 """
 import shutil
+from pathlib import Path
 import time
 from datetime import date
+from urllib.parse import quote
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
 from app.config import settings
-from app.db.models import Job
+from app.db.models import Child, Job, Zone
 from app.db.session import SessionLocal, get_db
+from app.reports import save_report
 
 router = APIRouter(tags=["analyze"])
 
 MOCK_STEPS = ["Detecting people", "Tracking children", "Analyzing screens", "Checking safety", "Building report"]
+
+
+def _mock_run(db, job) -> str:
+    for i, step in enumerate(MOCK_STEPS):
+        job.step, job.progress = step, int(i / len(MOCK_STEPS) * 100)
+        db.commit()
+        time.sleep(1)  # stands in for the real work
+    return "s1"
+
+
+def _real_run(db, job, video_path: str, session_date: date) -> str:
+    from app.pipeline.run import run_video  # loads the models only when really needed
+
+    children = [{"id": c.id, "name": c.name, "age_group": c.age_group} for c in db.scalars(select(Child))]
+    zones = [{"id": z.id, "name": z.name, "polygon": z.polygon} for z in db.scalars(select(Zone))]
+
+    def on_progress(percent: int, step: str) -> None:
+        job.progress, job.step = int(percent), step
+        db.commit()
+
+    report, frames = run_video(video_path, children, zones, on_progress, return_frames=True)
+    video_url = f"/media/uploads/{quote(Path(video_path).name)}"
+    row = save_report(db, report, frames, source="upload", session_date=session_date, video_url=video_url)
+    return row.id
 
 
 def process_video(job_id: str, video_path: str, session_date: date) -> None:
@@ -24,11 +53,12 @@ def process_video(job_id: str, video_path: str, session_date: date) -> None:
     job = db.get(Job, job_id)
     try:
         job.status = "processing"
-        for i, step in enumerate(MOCK_STEPS):
-            job.step, job.progress = step, int(i / len(MOCK_STEPS) * 100)
-            db.commit()
-            time.sleep(1)  # stands in for the real work
-        job.status, job.progress, job.step, job.session_id = "done", 100, "Done", "s1"
+        db.commit()
+        if settings.use_mock_pipeline:
+            session_id = _mock_run(db, job)
+        else:
+            session_id = _real_run(db, job, video_path, session_date)
+        job.status, job.progress, job.step, job.session_id = "done", 100, "Done", session_id
         db.commit()
     except Exception as exc:  # report the failure to the frontend instead of hanging
         job.status, job.error = "failed", str(exc)

@@ -23,11 +23,15 @@ class Settings(BaseSettings):
     # Frontend origins allowed to call the API
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
-    # While the real pipeline is being built, endpoints return the mock data.
+    # True (default, used by the tests): uploads and live return mock results.
+    # Set USE_MOCK_PIPELINE=false on the server and in backend/.env to run the real models.
     use_mock_pipeline: bool = True
 
     # Pipeline settings
     analyzed_fps: float = 3.0
+
+    # Hugging Face model repo with tablet.pt and violence.pt (downloaded when missing)
+    models_repo: str = "Ahmed-log/kanaf-models"
 
     @property
     def db_url(self) -> str:

@@ -26,6 +26,7 @@ export default function Live() {
   const [frame, setFrame] = useState(null);
   const [problem, setProblem] = useState(null);
   const [elapsed, setElapsed] = useState(0);
+  const [flagged, setFlagged] = useState([]); // moments flagged during this live session
 
   const { data: children } = useData(() => (USE_MOCKS ? getSession("s1").then((s) => s.children) : getChildren()), []);
   const list = children ?? [];
@@ -44,6 +45,7 @@ export default function Live() {
 
   async function start() {
     setProblem(null);
+    setFlagged([]);
     setStatus("starting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
@@ -63,6 +65,7 @@ export default function Live() {
       socket.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
         setFrame(data.frame);
+        if (data.alerts?.length) setFlagged((prev) => [...data.alerts, ...prev]);
       };
       socket.onerror = () => setProblem(t("live.socketError"));
       socket.onopen = () => {
@@ -153,6 +156,13 @@ export default function Live() {
         </section>
 
         <aside className="flex min-w-0 flex-1 flex-col gap-3.5">
+          {flagged.map((a) => (
+            <div key={a.id} role="status" className="flex items-center gap-3 rounded-[18px] bg-alert-soft px-4 py-3 text-alert-text">
+              <span className="size-2.5 shrink-0 rounded-full bg-alert" />
+              <span className="font-semibold">{t(`event.${a.type}`)}</span>
+              <span className="ms-auto text-sm">{nameFor(a.child_id) ?? ""}</span>
+            </div>
+          ))}
           {running && people.length === 0 && <Card className="!p-5 text-body">{frame ? t("live.nobody") : t("live.waiting")}</Card>}
           {people.map((p) => {
             const child = list.find((c) => c.id === p.child_id);

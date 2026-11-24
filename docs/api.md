@@ -111,6 +111,10 @@ The backend answers each one with a frame in the **Frame overlays** format, plus
 
 `GET /sessions/{session_id}` → the full report. See **Session report** below.
 
+`GET /sessions/latest` → the newest saved session (the demo session `s1` while there is none). The dashboard opens this one.
+
+Uploaded videos are served at `/media/uploads/...`; `video.url` in a saved report is that path.
+
 `GET /sessions/{session_id}/frames` → overlays for the video review screen. See **Frame overlays** below.
 
 ### Summary (dashboard: day / week / month)

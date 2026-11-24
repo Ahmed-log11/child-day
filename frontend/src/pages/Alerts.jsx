@@ -37,7 +37,7 @@ function Scene({ event, children }) {
 
 export default function Alerts() {
   const { t, locale } = useI18n();
-  const { data, error, loading } = useData(() => Promise.all([getAlerts(), getSession("s1")]), []);
+  const { data, error, loading } = useData(() => Promise.all([getAlerts(), getSession("latest")]), []);
   const [alerts, setAlerts] = useState(null);
   const [answered, setAnswered] = useState(0);
 
