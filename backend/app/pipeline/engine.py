@@ -490,6 +490,8 @@ class Engine:
             "height": self.height,
             "analyzed_fps": self.analyzed_fps,
             "frames_analyzed": len(self.times),
+            "video": {"url": None, "duration_s": duration, "width": self.width,
+                      "height": self.height, "analyzed_fps": self.analyzed_fps},
         }
         try:
             self.report = report_mod.build_report(session, children, segments, events)
