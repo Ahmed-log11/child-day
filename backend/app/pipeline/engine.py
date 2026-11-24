@@ -54,7 +54,7 @@ PRESENCE_WINDOW_S = 5.0
 EVENT_GAP_S = 2.0             # an event closes after it has been inactive this long
 ZONE_MIN_S = 1.0              # must stay in a danger zone this long before an alert
 FALL_HISTORY_S = 6.0          # history passed to fall.detect_fall
-VIOLENCE_CLIP_S = 3.0         # clip length passed to violence.violent_contact_score
+VIOLENCE_CLIP_S = 16 / 3      # the model was trained on 16 frames (16 frames at 3 fps)
 VIOLENCE_EVERY_S = 1.0        # run the classifier at most this often
 VIOLENCE_THRESHOLD = 0.70
 CONTACT_DIST = 0.6            # two people are "close" if centre distance < this * mean body height
@@ -304,9 +304,20 @@ class Engine:
                 self._last_violence_t = t
                 score = self._call_p2("violence", violence_mod.violent_contact_score,
                                       self._violence_model, list(self._frame_buffer))
-                if score is not None and score >= VIOLENCE_THRESHOLD:
-                    ids = sorted({p.get("child_id") for p in close_pair if p.get("child_id")})
-                    active[("violent_contact", *ids)] = {"child_id": ids[0], "conf": float(score)}
+                if score is not None:
+                    a, b = close_pair
+                    other = b if a.get("child_id") else a
+                    flag_fn = getattr(violence_mod, "violence_flag", None)
+                    if flag_fn is not None:
+                        # P2's thresholds; anyone without a child_id is treated as an adult
+                        flag = self._call_p2("violence", lambda: flag_fn(
+                            self._violence_model, score,
+                            child_involved=True, other_is_adult=not other.get("child_id")))
+                    else:
+                        flag = score >= VIOLENCE_THRESHOLD
+                    if flag:
+                        ids = sorted({p.get("child_id") for p in close_pair if p.get("child_id")})
+                        active[("violent_contact", *ids)] = {"child_id": ids[0], "conf": float(score)}
         return active
 
     # ------------------------------------------------------------- per frame
