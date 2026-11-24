@@ -3,6 +3,8 @@
 process_video runs the real pipeline (app/pipeline/run.py) and saves the report.
 """
 import shutil
+from pathlib import Path
+from app.storage import cut_clip, save_clip
 from datetime import date
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
@@ -52,9 +54,15 @@ def process_video(job_id: str, video_path: str, session_date: date) -> None:
         report["id"] = session.id
         report["date"] = session_date.isoformat()
 
-        # Event ids must be unique across all sessions (the Engine numbers them e1, e2... per video)
+        # Unique event ids, and a short clip around each alert
         for e in report["events"]:
             e["id"] = new_id("e")
+            try:
+                tmp = settings.storage_dir / "tmp" / f"{e['id']}.mp4"
+                cut_clip(video_path, e["start_s"], e["end_s"], str(tmp))
+                e["clip_url"] = save_clip(str(tmp), f"{session.id}_{e['id']}.mp4")
+            except Exception:
+                e["clip_url"] = None  # the alert still shows, just without a clip
 
         # Saves segments and events in their own tables (used by the dashboard summaries)
         for s in report["segments"]:
@@ -77,6 +85,8 @@ def process_video(job_id: str, video_path: str, session_date: date) -> None:
         job.status, job.error = "failed", str(exc)
         db.commit()
     finally:
+        # The full video is never kept: only timelines and short clips (README)
+        Path(video_path).unlink(missing_ok=True)
         db.close()
 
 
