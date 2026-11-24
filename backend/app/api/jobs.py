@@ -1,22 +1,21 @@
 """Upload + processing screens: POST /analyze and GET /jobs/{id}.
 
-For now the background task only simulates progress and points to the mock session.
-P4 replaces `process_video` with a call to the real pipeline (app/pipeline/run.py).
+process_video runs the real pipeline (app/pipeline/run.py) and saves the report.
 """
 import shutil
-import time
 from datetime import date
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session as DbSession
 
 from app.config import settings
-from app.db.models import Job
+from app.db.models import Child, Event, Job, Segment, Session, Zone, new_id
 from app.db.session import SessionLocal, get_db
+from app.pipeline.run import run_video
 
 router = APIRouter(tags=["analyze"])
 
-MOCK_STEPS = ["Detecting people", "Tracking children", "Analyzing screens", "Checking safety", "Building report"]
+SEGMENT_FIELDS = ("child_id", "category", "state", "start_s", "end_s")
 
 
 def process_video(job_id: str, video_path: str, session_date: date) -> None:
@@ -24,13 +23,57 @@ def process_video(job_id: str, video_path: str, session_date: date) -> None:
     job = db.get(Job, job_id)
     try:
         job.status = "processing"
-        for i, step in enumerate(MOCK_STEPS):
-            job.step, job.progress = step, int(i / len(MOCK_STEPS) * 100)
-            db.commit()
-            time.sleep(1)  # stands in for the real work
-        job.status, job.progress, job.step, job.session_id = "done", 100, "Done", "s1"
+        db.commit()
+
+        # Children and zones from the setup screen, in the shape the Engine expects
+        children = [{"id": c.id, "name": c.name, "age_group": c.age_group} for c in db.query(Child).all()]
+        zones = [{"id": z.id, "name": z.name, "polygon": z.polygon} for z in db.query(Zone).all()]
+        known = {c["id"] for c in children}
+
+        # Moves the processing screen; writes to the database only when the percent changes
+        last = {"p": -1}
+
+        def on_progress(percent: int, step: str) -> None:
+            if percent != last["p"]:
+                last["p"] = percent
+                job.progress, job.step = percent, step
+                db.commit()
+
+        # Creates the session row first, so the frames file can use its id
+        session = Session(date=session_date, source="upload")
+        db.add(session)
+        db.flush()
+        frames_path = settings.storage_dir / "frames" / f"{session.id}.json"
+
+        report = run_video(video_path, children, zones, on_progress, frames_path=str(frames_path))
+
+        # Fills the duration now that the video has been read
+        session.duration_s = (report.get("video") or {}).get("duration_s") or 0
+        report["id"] = session.id
+        report["date"] = session_date.isoformat()
+
+        # Event ids must be unique across all sessions (the Engine numbers them e1, e2... per video)
+        for e in report["events"]:
+            e["id"] = new_id("e")
+
+        # Saves segments and events in their own tables (used by the dashboard summaries)
+        for s in report["segments"]:
+            if s["child_id"] in known:
+                db.add(Segment(session_id=session.id, **{k: s[k] for k in SEGMENT_FIELDS}))
+        for e in report["events"]:
+            db.add(Event(
+                id=e["id"], session_id=session.id,
+                child_id=e["child_id"] if e["child_id"] in known else None,
+                type=e["type"], start_s=e["start_s"], end_s=e["end_s"],
+                confidence=e["confidence"], zone_id=e.get("zone_id"),
+                clip_url=e.get("clip_url"), reviewed=False,
+            ))
+
+        session.report = report
+        job.status, job.progress, job.step, job.session_id = "done", 100, "Done", session.id
         db.commit()
     except Exception as exc:  # report the failure to the frontend instead of hanging
+        db.rollback()
         job.status, job.error = "failed", str(exc)
         db.commit()
     finally:

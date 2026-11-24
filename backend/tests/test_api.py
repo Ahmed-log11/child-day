@@ -29,7 +29,20 @@ def test_session_report_shape():
         assert key in r
 
 
-def test_upload_job_finishes():
+def test_upload_job_finishes(monkeypatch):
+    # Replaces the real pipeline with a fake one, so the test needs no real video or models
+    import app.api.jobs as jobs_module
+
+    def fake_run_video(video_path, children, zones, on_progress, frames_path=None):
+        on_progress(50, "Following the children")
+        return {
+            "id": None, "date": None, "started_at": None,
+            "video": {"url": None, "duration_s": 10, "width": 64, "height": 48, "analyzed_fps": 3},
+            "children": [], "segments": [], "totals": {}, "events": [],
+        }
+
+    monkeypatch.setattr(jobs_module, "run_video", fake_run_video)
+
     files = {"video": ("clip.mp4", b"fake-bytes", "video/mp4")}
     job = client.post("/analyze", files=files).json()
     status = client.get(f"/jobs/{job['job_id']}").json()

@@ -1,6 +1,7 @@
 """Reads a video at ~3 fps and feeds the frames to the Engine. Owner: P4."""
 import cv2
-
+import json
+from pathlib import Path
 from app.pipeline.engine import Engine
 
 TARGET_FPS = 3.0
@@ -15,8 +16,7 @@ def _step_name(percent: int) -> str:
     return "Checking movement and safety"
 
 
-def run_video(video_path: str, children: list[dict], zones: list[dict], on_progress) -> dict:
-    # Opens the video, fails with a clear message if it can't be read
+def run_video(video_path: str, children: list[dict], zones: list[dict], on_progress, frames_path: str | None = None) -> dict:    # Opens the video, fails with a clear message if it can't be read
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise ValueError(f"Cannot open video: {video_path}")
@@ -48,6 +48,10 @@ def run_video(video_path: str, children: list[dict], zones: list[dict], on_progr
         # Asks the Engine for the final report
         on_progress(96, "Writing the day's report")
         report = engine.finish()
+        # Optional: saves the overlays (Frame overlays format) for the review screen
+        if frames_path:
+            Path(frames_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(frames_path).write_text(json.dumps(engine.get_frames()))
         on_progress(100, "Done")
         return report
     finally:
