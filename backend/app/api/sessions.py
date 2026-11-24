@@ -5,6 +5,8 @@ The mock session "s1" stays available as a demo fallback, and "latest" means the
 newest real session, or the mock one while there is none yet.
 The week/month summary is still sample data.
 """
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -14,7 +16,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from app import mocks
 from app.db.models import Session as SessionRow
 from app.db.session import get_db
-from app.reports import read_frames
+from app.reports import frames_path, read_frames
 
 router = APIRouter(tags=["reports"])
 
@@ -107,3 +109,43 @@ def update_alert(event_id: str, body: AlertUpdate, db: DbSession = Depends(get_d
         if e["id"] == event_id:
             return {**e, "reviewed": body.reviewed}  # mock events are not saved
     raise HTTPException(404, "Alert not found")
+
+
+class Swap(BaseModel):
+    a: str
+    b: str
+
+
+@router.post("/sessions/{session_id}/swap")
+def swap_children(session_id: str, body: Swap, db: DbSession = Depends(get_db)):
+    """The parent says two names are the wrong way round (we see outlines, never faces).
+
+    Swaps the two children everywhere in this session: timeline, totals, alerts and overlays.
+    """
+    row = db.get(SessionRow, session_id)
+    if not row or not row.report:
+        raise HTTPException(404, "Session not found")
+    a, b = body.a, body.b
+    flip = lambda cid: b if cid == a else a if cid == b else cid  # noqa: E731
+
+    report = json.loads(json.dumps(row.report))
+    tracks = {c["id"]: c.get("track_ids", []) for c in report["children"]}
+    if a not in tracks or b not in tracks:
+        raise HTTPException(422, "Both children must be in this session")
+    for c in report["children"]:
+        c["track_ids"] = tracks[flip(c["id"])]
+    for item in report["segments"] + report["events"]:
+        item["child_id"] = flip(item.get("child_id"))
+    report["totals"] = {flip(k): v for k, v in report["totals"].items()}
+    row.report = report
+    flag_modified(row, "report")
+    db.commit()
+
+    path = frames_path(session_id)
+    if path.exists():
+        frames = json.loads(path.read_text())
+        for f in frames.get("frames", []):
+            for person in f.get("people", []):
+                person["child_id"] = flip(person.get("child_id"))
+        path.write_text(json.dumps(frames))
+    return report

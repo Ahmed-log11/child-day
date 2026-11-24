@@ -61,6 +61,10 @@ const withVideoUrl = (s) => ({
 export const getSession = (id) =>
   USE_MOCKS ? Promise.resolve(mockSession()) : request(`/sessions/${id}`).then(withVideoUrl);
 
+// The parent says two names are the wrong way round: swap them everywhere in this session.
+export const swapChildren = (sessionId, a, b) =>
+  request(`/sessions/${sessionId}/swap`, json("POST", { a, b })).then(withVideoUrl);
+
 export function getFrames(id) {
   if (!USE_MOCKS) return request(`/sessions/${id}/frames`);
   mockFrames ??= buildFrames(sessionReport);

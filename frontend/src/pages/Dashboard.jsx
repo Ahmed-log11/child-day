@@ -1,7 +1,8 @@
 // Today: one child's day in words, numbers, the sky timeline and the moments to check.
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { getSession } from "../api/client";
+import { getSession, swapChildren, USE_MOCKS } from "../api/client";
 import { useData } from "../lib/useData";
 import { childTheme, severity, useColorVersion, useSelectedChild } from "../lib/children";
 import { RangeTabs } from "../components/RangeTabs";
@@ -21,7 +22,9 @@ function Strong({ className, children }) {
 
 export default function Dashboard() {
   const { t, locale } = useI18n();
-  const { data: session, error, loading } = useData(() => getSession("latest"), []);
+  const { data: loaded, error, loading } = useData(() => getSession("latest"), []);
+  const [swapped, setSwapped] = useState(null); // the session after the parent swapped two names
+  const session = swapped ?? loaded;
   useColorVersion();
   const children = session?.children ?? [];
   const [child, setChildId] = useSelectedChild(children);
@@ -56,6 +59,25 @@ export default function Dashboard() {
         <div>
           <div className="mb-1.5 text-sm text-muted">{longDate(locale, session.date)}</div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("today.title", { name: child.name })}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <Link to={`/sessions/${session.id}`} className="font-semibold text-clay">
+              {t("today.watch")}
+            </Link>
+            {!USE_MOCKS &&
+              session.source &&
+              children
+                .filter((c) => c.id !== child.id)
+                .map((other) => (
+                  <button
+                    key={other.id}
+                    type="button"
+                    onClick={async () => setSwapped(await swapChildren(session.id, child.id, other.id))}
+                    className="text-muted underline-offset-2 hover:text-ink hover:underline"
+                  >
+                    {t("today.swap", { a: child.name, b: other.name })}
+                  </button>
+                ))}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <ChildSwitch children={children} selectedId={child.id} onSelect={setChildId} />

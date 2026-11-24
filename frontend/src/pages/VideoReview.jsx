@@ -1,6 +1,6 @@
 // Review a moment: the video (or demo stage) with boxes and body outlines,
 // a bar of flagged moments, and the question "what was it?".
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
 import { getFrames, getSession, markAlertReviewed, USE_MOCKS } from "../api/client";
@@ -31,13 +31,41 @@ export default function VideoReview() {
   }, [session]);
 
   const durationS = session?.video.duration_s ?? 0;
+  const hasVideo = !USE_MOCKS && !!session?.video?.url;
+  const videoRef = useRef(null);
 
-  // Play: move through the frames in real time.
+  // Demo stage (no video): move through the frames in real time.
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || hasVideo) return;
     const id = setInterval(() => setSecond((s) => Math.min(s + 0.5, durationS)), 500);
     return () => clearInterval(id);
-  }, [playing, durationS]);
+  }, [playing, durationS, hasVideo]);
+
+  // Real video: the video is the clock. Play/pause it, and follow its time while it plays.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!hasVideo || !video) return;
+    if (!playing) {
+      video.pause();
+      return;
+    }
+    video.play().catch(() => setPlaying(false));
+    let raf;
+    const follow = () => {
+      setSecond(video.currentTime);
+      if (video.ended) setPlaying(false);
+      else raf = requestAnimationFrame(follow);
+    };
+    raf = requestAnimationFrame(follow);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, hasVideo]);
+
+  // Real video: when the bar is dragged (or a moment is opened), jump the video there.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!hasVideo || !video || playing) return;
+    if (Math.abs(video.currentTime - second) > 0.25) video.currentTime = second;
+  }, [second, playing, hasVideo]);
 
   useEffect(() => {
     if (playing && second >= durationS) setPlaying(false);
@@ -61,7 +89,6 @@ export default function VideoReview() {
 
   const current = events.find((e) => e.start_s - 5 <= second && second <= e.end_s + 10) ?? null;
   const pct = (s) => `${(s / durationS) * 100}%`;
-  const hasVideo = !USE_MOCKS && session.video.url;
 
   async function answer(event, value) {
     const updated = await markAlertReviewed(event.id, value);
@@ -79,7 +106,15 @@ export default function VideoReview() {
       <div className="flex flex-col gap-5 lg:flex-row">
         <section className="flex min-w-0 flex-[2] flex-col gap-3.5 self-start rounded-[22px] bg-[#16181D] p-3 sm:p-4">
           <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#23262E]">
-            {hasVideo ? <video src={session.video.url} className="h-full w-full object-cover" muted /> : <MockRoom />}
+            {hasVideo ? <video
+                ref={videoRef}
+                src={session.video.url}
+                className="h-full w-full object-cover"
+                muted
+                playsInline
+                preload="auto"
+                onLoadedMetadata={(e) => (e.currentTarget.currentTime = second)}
+              /> : <MockRoom />}
             <OverlayCanvas frame={frame} colorFor={colorFor} nameFor={nameFor} showBoxes={showBoxes} showOutlines={showOutlines} />
             <span className="absolute start-3 bottom-3 rounded-md bg-black/60 px-2.5 py-1 text-xs text-[#E6E9EF] tabular-nums">
               {clock(locale, session.started_at, second)}

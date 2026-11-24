@@ -41,6 +41,9 @@ REID_MAX_DIST = 0.35          # a new track takes over a lost child only if this
 MAX_AUTO_CHILDREN = 4         # when no children are given, up to this many are created
 TRACK_FORGET_S = 15.0         # drop per-track buffers after this long unseen
 
+# speed: objects (TV, tablet, phone) barely move, so detect them every N frames and reuse the boxes
+OBJECTS_EVERY_N = 2
+
 # activity
 ACTIVITY_AVG_S = 2.0          # movement is averaged over this window before activity_state()
 MAX_MOVE_DT = 2.0             # frames further apart than this are not compared
@@ -124,6 +127,7 @@ class Engine:
         self._frame_buffer: deque = deque(maxlen=max(2, int(round(VIOLENCE_CLIP_S * self.analyzed_fps))))
         self._last_violence_t = -1e9
         self.report: dict | None = None
+        self._last_objects: list[dict] = []
 
     # ------------------------------------------------------------------ setup
     def _load_violence_model(self):
@@ -336,7 +340,9 @@ class Engine:
         if self._enabled["violence"] and frame is not None:
             self._frame_buffer.append(frame)
 
-        objects = perception.detect_objects(frame)
+        if (len(self.times) - 1) % OBJECTS_EVERY_N == 0 or frame is None:
+            self._last_objects = perception.detect_objects(frame)
+        objects = [dict(o) for o in self._last_objects]   # copies: "on" and holders are set per frame
         people = perception.detect_people(frame)
 
         # TVs on/off

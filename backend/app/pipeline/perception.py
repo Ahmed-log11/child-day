@@ -31,7 +31,7 @@ TABLET_WEIGHTS = ["tablet_openvino_model", "tablet.pt", "yolo11n_tablet.pt", "be
 USE_TABLET_MODEL = False
 
 IMGSZ = 480                 # 480 or 416 keeps it fast on a free CPU (pose + tracking)
-OBJECT_IMGSZ = 960          # objects are small (a tablet in a hand): detect them at a higher resolution
+OBJECT_IMGSZ = 800          # objects are small (a tablet in a hand): 800 finds it, 640 misses it
 DEVICE = "cpu"
 OBJECT_CONF = 0.30          # min confidence for COCO objects
 TABLET_CONF = 0.35          # min confidence for the tablet model

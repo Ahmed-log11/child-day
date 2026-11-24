@@ -64,7 +64,9 @@
       "watch": "Watch",
       "reviewAll": "Review them"
     },
-    "privacy": "We see body outlines and movement, never faces. Only short clips of flagged moments are kept."
+    "privacy": "We see body outlines and movement, never faces. Only short clips of flagged moments are kept.",
+    "watch": "Watch the video",
+    "swap": "Names mixed up? Swap {a} and {b}"
   },
   "screen": {
     "tv": "TV",
