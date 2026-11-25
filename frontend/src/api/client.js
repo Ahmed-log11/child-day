@@ -105,7 +105,10 @@ export const getSummary = ({ range = "week", childId, endDate } = {}) => Promise
 export const getAlerts = (range = "week") =>
   USE_MOCKS
     ? Promise.resolve(mockEvents().map((e) => ({ ...e, session_id: sessionReport.id, date: sessionReport.date })))
-    : request(`/alerts?range=${range}`).then((list) => list.map(withClip));
+    : request(`/alerts?range=${range}`).then((list) =>
+        // Only the latest analyzed video: uploading the same video twice must not show every moment twice.
+        list.filter((e) => e.session_id === list[0]?.session_id).map(withClip),
+      );
 
 export async function markAlertReviewed(id, value = true) {
   let result;

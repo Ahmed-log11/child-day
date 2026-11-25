@@ -73,7 +73,7 @@ export default function Alerts() {
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-5 px-4 pt-6 sm:pt-9">
+    <main className="mx-auto flex max-w-md flex-col gap-5 px-4 pt-6 sm:pt-9 lg:max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("quick.title")}</h1>
@@ -94,8 +94,8 @@ export default function Alerts() {
       </div>
 
       {current ? (
-        <section className="flex flex-col gap-4">
-          <div>
+        <section className="grid gap-4 lg:grid-flow-dense lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-x-10">
+          <div className="lg:col-start-2">
             <div className="flex flex-wrap items-center gap-2">
               <StatusChip kind={severity(current)} />
               <span className="text-[13px] text-muted">{t("quick.count", { n: answered + 1, total })}</span>
@@ -105,7 +105,7 @@ export default function Alerts() {
               {t("event.who", { name: nameOf(current.child_id), time: clock(locale, session.started_at, current.start_s) })}
             </div>
           </div>
-          <div className="rounded-[20px] bg-peach px-4 pt-4 pb-2.5">
+          <div className="self-start rounded-[20px] bg-peach px-4 pt-4 pb-2.5 lg:col-start-1 lg:row-span-6 lg:row-start-1">
             {!USE_MOCKS && current.clip_url ? (
               <video key={current.id} src={current.clip_url} controls muted playsInline className="aspect-video w-full rounded-xl bg-black" />
             ) : (
@@ -116,12 +116,12 @@ export default function Alerts() {
               <span>{duration(t, Math.max(1, current.end_s - current.start_s))}</span>
             </div>
           </div>
-          <p className="text-[15px] leading-relaxed text-body">{t(`event.desc.${current.type}`, { name: nameOf(current.child_id) })}</p>
-          <Link to={`/sessions/${current.session_id}?t=${current.start_s}`} className="text-sm font-semibold text-rust">
+          <p className="text-[15px] leading-relaxed text-body lg:col-start-2">{t(`event.desc.${current.type}`, { name: nameOf(current.child_id) })}</p>
+          <Link to={`/sessions/${current.session_id}?t=${current.start_s}`} className="text-sm font-semibold text-rust lg:col-start-2">
             {t("quick.watch")}
           </Link>
-          <div className="text-lg font-bold">{t("quick.question")}</div>
-          <div className="flex flex-col gap-2.5">
+          <div className="text-lg font-bold lg:col-start-2">{t("quick.question")}</div>
+          <div className="flex flex-col gap-2.5 lg:col-start-2">
             <button type="button" onClick={() => answer(current)} className="min-h-14 rounded-2xl bg-clay text-base font-semibold text-white hover:bg-rust">
               {t("quick.fine")}
             </button>
