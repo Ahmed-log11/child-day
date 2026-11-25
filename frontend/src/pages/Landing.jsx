@@ -73,7 +73,7 @@ export default function Landing() {
         <header className="relative z-[3] px-3 py-4 sm:px-4">
           <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4">
             <Logo />
-            <nav className="mx-auto hidden gap-0.5 lg:flex">
+            <nav className="ms-6 hidden gap-0.5 lg:flex">
               <button type="button" onClick={() => scrollTo("how")} className="min-h-10 rounded-full px-4 text-sm text-body hover:bg-[rgba(28,23,20,.05)]">
                 {t("ln.how")}
               </button>
@@ -81,7 +81,7 @@ export default function Landing() {
                 {t("ln.privacy")}
               </button>
             </nav>
-            <div className="ms-auto flex items-center gap-2 lg:ms-0">
+            <div className="ms-auto flex items-center gap-2">
               <LangToggle />
               <Link to="/dashboard" className="hidden min-h-[38px] items-center rounded-full border border-[rgba(28,23,20,.18)] px-3.5 text-[13.5px] font-semibold sm:flex">
                 {t("ln.sample")}
@@ -95,7 +95,7 @@ export default function Landing() {
 
         <div className="relative z-[2] mx-auto grid max-w-[1180px] items-end gap-10 px-4 pt-4 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] lg:pt-6">
           <div>
-            <h1 className="mb-6 text-[clamp(44px,7vw,100px)] leading-[1.05] font-black tracking-tight" dir={dir}>
+            <h1 className={`mb-6 text-[clamp(44px,7vw,100px)] font-black tracking-tight ${dir === "rtl" ? "leading-[1.3]" : "leading-[1.05]"}`} dir={dir}>
               <span className="block">
                 <span className="typing">{t("ln.h1a")}</span>
               </span>
