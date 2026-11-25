@@ -17,6 +17,7 @@ class ChildIn(BaseModel):
 
 class ChildUpdate(BaseModel):
     name: str | None = None
+    age_group: str | None = None
     color: str | None = None
 
 
@@ -51,10 +52,25 @@ def update_child(child_id: str, body: ChildUpdate, db: DbSession = Depends(get_d
         raise HTTPException(404, "Child not found")
     if body.name is not None:
         child.name = body.name
+    if body.age_group is not None:
+        if body.age_group not in ("3-4", "5-12"):
+            raise HTTPException(422, "age_group must be '3-4' or '5-12'")
+        child.age_group = body.age_group
     if body.color is not None:
         child.color = body.color
     db.commit()
     return _child(child)
+
+
+@router.delete("/children/{child_id}")
+def delete_child(child_id: str, db: DbSession = Depends(get_db)):
+    """Removes the child from Setup. Sessions already analyzed keep their report as it was."""
+    child = db.get(Child, child_id)
+    if not child:
+        raise HTTPException(404, "Child not found")
+    db.delete(child)
+    db.commit()
+    return {"deleted": True}
 
 
 @router.get("/zones")

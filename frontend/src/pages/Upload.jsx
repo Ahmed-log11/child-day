@@ -77,12 +77,12 @@ export default function Upload() {
               {preview ? (
                 <img src={preview} alt={t("upload.firstFrame")} className="aspect-video w-full rounded-xl object-cover sm:w-64" />
               ) : (
-                <div className="aspect-video w-full rounded-xl bg-[#23262E] sm:w-64" />
+                <div className="aspect-video w-full rounded-xl bg-[#2b221e] sm:w-64" />
               )}
               <div className="min-w-0">
                 <div className="truncate font-semibold">{file.name}</div>
                 <div className="text-sm text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
-                <label htmlFor="video-file" className="mt-2 inline-block cursor-pointer text-sm font-semibold text-clay">
+                <label htmlFor="video-file" className="mt-2 inline-block cursor-pointer text-sm font-semibold text-rust">
                   {t("upload.change")}
                 </label>
               </div>
@@ -92,7 +92,7 @@ export default function Upload() {
               htmlFor="video-file"
               className="flex cursor-pointer flex-col items-center gap-2.5 rounded-2xl border-2 border-dashed border-[#d9cdbe] bg-cream px-6 py-12 text-center"
             >
-              <span className="flex size-16 items-center justify-center rounded-2xl border border-[#eadfd6] bg-white">
+              <span className="flex size-16 items-center justify-center rounded-2xl border border-[#eadfd6] bg-paper">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A9472A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" />
                 </svg>
@@ -110,7 +110,7 @@ export default function Upload() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3 font-normal"
+              className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3 font-normal"
             />
           </label>
           <fieldset className="flex flex-col gap-2">
@@ -144,7 +144,7 @@ export default function Upload() {
             ) : (
               <p className="text-sm text-body">
                 {t("upload.noChildren")}{" "}
-                <Link to="/setup" className="font-semibold text-clay">
+                <Link to="/setup" className="font-semibold text-rust">
                   {t("upload.addChildren")}
                 </Link>
               </p>
@@ -161,7 +161,7 @@ export default function Upload() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
           <span className="flex flex-wrap items-center gap-2 text-sm text-body">
             <StatusChip kind="look" label={t("upload.zones")} />
-            <Link to="/setup" className="font-semibold text-clay">
+            <Link to="/setup" className="font-semibold text-rust">
               {t("upload.editZones")}
             </Link>
           </span>
@@ -169,14 +169,14 @@ export default function Upload() {
             type="button"
             onClick={submit}
             disabled={sending}
-            className="min-h-12 rounded-xl bg-clay px-6 font-semibold text-white hover:bg-clay-dark disabled:opacity-70"
+            className="min-h-12 rounded-full bg-clay px-6 font-semibold text-white hover:bg-rust disabled:opacity-70"
           >
             {sending ? t("upload.sending") : t("upload.analyze")}
           </button>
         </div>
       </Card>
 
-      <Link to="/live" className="flex items-center gap-2 self-start text-sm font-semibold text-clay">
+      <Link to="/live" className="flex items-center gap-2 self-start text-sm font-semibold text-rust">
         <span className="size-2 rounded-full bg-clay" />
         {t("upload.orLive")}
       </Link>

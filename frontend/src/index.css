@@ -1,49 +1,60 @@
 @import "tailwindcss";
 
-/* Kanaf design tokens. Use them as Tailwind classes: bg-clay, text-ink, bg-screen... */
+/* Kanaf design tokens ("camera's eye": sand and glass). Use them as Tailwind classes: bg-clay, text-ink... */
 @theme {
   --font-sans: "Readex Pro", system-ui, sans-serif;
 
   /* Brand */
-  --color-ink: #1c2430;
-  --color-body: #46505c;
-  --color-muted: #5a6370;
-  --color-line: #eae3da;
-  --color-page: #f8f5f0;
-  --color-cream: #fbf6ef;
-  --color-clay: #a9472a;
-  --color-clay-dark: #8c3a22;
-  --color-sun: #f2c14e;
+  --color-ink: #1c1714;
+  --color-body: #3b322c;
+  --color-muted: #7d7062;
+  --color-line: #e3d9cd;
+  --color-page: #eee7de; /* sand */
+  --color-sand-2: #e5dcd0;
+  --color-cream: #faf6f1; /* paper */
+  --color-paper: #faf6f1;
+  --color-clay: #d9692d; /* the one accent: a calm orange */
+  --color-clay-dark: #b44a27; /* rust */
+  --color-rust: #b44a27;
+  --color-peach: #fbe9da;
+  --color-sun: #f2b33d;
 
-  /* Data: what happened (never good or bad) */
+  /* Data: what happened (never good or bad). Screens stay blue so data never looks like a button. */
   --color-screen: #2f4f86;
   --color-screen-2: #1b2f55;
-  --color-screen-soft: #dce4f1;
-  --color-move: #1f9aa8;
-  --color-move-light: #b6e3e8;
-  --color-move-soft: #ddf0f2;
-  --color-move-text: #17707a;
+  --color-screen-soft: #dde3ee;
+  --color-move: #2e9c8c;
+  --color-move-light: #9fd3c9;
+  --color-move-soft: #dcefe9;
+  --color-move-text: #1e7266;
 
   /* Status: always shown with an icon and a word */
-  --color-ok: #256b4a;
-  --color-ok-soft: #e1f2ea;
-  --color-look: #d9961a;
-  --color-look-text: #83570c;
-  --color-look-soft: #faedd3;
-  --color-alert: #c23b3b;
-  --color-alert-text: #a22c2c;
-  --color-alert-soft: #f9dfdf;
+  --color-ok: #3f8f63;
+  --color-ok-soft: #dfeee4;
+  --color-look: #c2801d;
+  --color-look-text: #8a5a10;
+  --color-look-soft: #f7e7c6;
+  --color-alert: #c9472f;
+  --color-alert-text: #a6361f;
+  --color-alert-soft: #f5ddd5;
 }
 
 html,
 body {
   background: var(--color-page);
-  color: var(--color-ink);
+  color: var(--color-body);
 }
 
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-ink);
+  text-wrap: balance;
 }
 
 button {
@@ -52,5 +63,73 @@ button {
 
 :focus-visible {
   outline: 2px solid var(--color-clay);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+/* Glass: the card style of the app. */
+@utility glass {
+  background: rgba(250, 246, 241, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(22px) saturate(1.15);
+  -webkit-backdrop-filter: blur(22px) saturate(1.15);
+  box-shadow: 0 30px 60px -34px rgba(40, 24, 12, 0.42), 0 2px 6px rgba(40, 24, 12, 0.05);
+}
+
+/* Small mono labels (dates, times, step numbers). */
+@utility mono {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[dir="rtl"] .mono {
+  letter-spacing: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+}
+
+[dir="rtl"] .flip {
+  transform: scaleX(-1);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes typer {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.typing {
+  display: inline-block;
+  animation: type 1.1s steps(18) both;
+}
+
+[dir="rtl"] .typing {
+  animation-name: typer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

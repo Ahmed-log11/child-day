@@ -81,7 +81,7 @@ export default function Processing() {
                     <span className="size-2 animate-pulse rounded-full bg-ink" />
                   </span>
                 )}
-                {state === "todo" && <span className="size-7 rounded-full border-[1.5px] border-[#d3c7b8]" />}
+                {state === "todo" && <span className="size-7 rounded-full border-[1.5px] border-[rgba(28,23,20,.18)]" />}
                 {label}
               </li>
             );
@@ -98,7 +98,7 @@ export default function Processing() {
         )}
 
         {job?.status === "done" && (
-          <Link to="/dashboard" className="mt-6 flex min-h-12 items-center justify-center rounded-xl bg-clay font-semibold text-white">
+          <Link to="/dashboard" className="mt-6 flex min-h-12 items-center justify-center rounded-full bg-clay font-semibold text-white">
             {t("processing.open")}
           </Link>
         )}

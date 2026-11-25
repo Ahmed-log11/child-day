@@ -42,7 +42,7 @@ export default function Insights() {
           e.preventDefault();
           ask();
         }}
-        className="flex items-center gap-2 rounded-2xl border border-[#ded5ca] bg-white py-2 ps-4 pe-2 focus-within:border-clay"
+        className="flex items-center gap-2 rounded-2xl border border-[rgba(28,23,20,.18)] bg-paper py-2 ps-4 pe-2 focus-within:border-clay"
       >
         <label htmlFor="question" className="sr-only">
           {t("ask.label")}
@@ -57,7 +57,7 @@ export default function Insights() {
           placeholder={t("ask.placeholder")}
           className="min-h-10 min-w-0 flex-1 bg-transparent text-base outline-none"
         />
-        <button type="submit" disabled={busy} className="min-h-11 rounded-xl bg-clay px-5 font-semibold text-white hover:bg-clay-dark disabled:opacity-70">
+        <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-clay px-5 font-semibold text-white hover:bg-rust disabled:opacity-70">
           {busy ? t("ask.thinking") : t("ask.send")}
         </button>
       </form>
@@ -69,7 +69,7 @@ export default function Insights() {
 
       <div className="flex flex-wrap gap-2">
         {tl("ask.suggestions").map((s) => (
-          <button key={s} type="button" onClick={() => ask(s)} className="min-h-10 rounded-full border border-[#ded5ca] bg-white px-4 text-sm hover:border-clay">
+          <button key={s} type="button" onClick={() => ask(s)} className="min-h-10 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm hover:border-clay">
             {s}
           </button>
         ))}
@@ -79,7 +79,7 @@ export default function Insights() {
         <Card aria-live="polite">
           <div className="mb-3 flex items-center gap-2.5">
             <LogoMark size={26} />
-            <span className="text-sm font-semibold text-clay">{t("brand.name")}</span>
+            <span className="text-sm font-semibold text-rust">{t("brand.name")}</span>
           </div>
           <p className="mb-2 text-sm text-muted">{answer.question}</p>
           <p className="text-lg leading-relaxed">{answer.answer}</p>

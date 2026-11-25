@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { getSession, swapChildren, USE_MOCKS } from "../api/client";
+import { getFrames, getSession, swapChildren, USE_MOCKS } from "../api/client";
 import { useData } from "../lib/useData";
 import { childTheme, severity, useColorVersion, useSelectedChild } from "../lib/children";
 import { RangeTabs } from "../components/RangeTabs";
 import { clock, duration, longDate, percent } from "../lib/format";
 import { usePageTint } from "../layout/AppShell";
-import { Card, StatCard } from "../components/Card";
+import { Card, StatRow } from "../components/Card";
+import { PageHead } from "../components/PageHead";
 import { ChildSwitch } from "../components/ChildSwitch";
 import { DayTimeline } from "../components/DayTimeline";
 import { StatusChip } from "../components/StatusChip";
@@ -30,6 +31,9 @@ export default function Dashboard() {
   const [child, setChildId] = useSelectedChild(children);
   const theme = child ? childTheme(children, child.id) : null;
   usePageTint(theme?.tint ?? null);
+  const { data: frames } = useData(() => (session ? getFrames(session.id).catch(() => null) : Promise.resolve(null)), [session?.id]);
+  const colorFor = (id) => childTheme(children, id).onDark;
+  const nameFor = (id) => children.find((c) => c.id === id)?.name;
 
   if (loading || error || !child) return <PageState loading={loading} error={error} />;
 
@@ -54,14 +58,15 @@ export default function Dashboard() {
   });
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-7 sm:px-6 sm:pt-9">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="mb-1.5 text-sm text-muted">{longDate(locale, session.date)}</div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("today.title", { name: child.name })}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <Link to={`/sessions/${session.id}`} className="font-semibold text-clay">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-5 px-4 pt-4 sm:px-6 sm:pt-6">
+      <PageHead
+        eyebrow={longDate(locale, session.date)}
+        title={t("today.title", { name: child.name })}
+        links={
+          <>
+            <Link to={`/sessions/${session.id}`} className="flex items-center gap-1.5 font-semibold text-rust">
               {t("today.watch")}
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flip" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </Link>
             {!USE_MOCKS &&
               session.source &&
@@ -77,34 +82,38 @@ export default function Dashboard() {
                     {t("today.swap", { a: child.name, b: other.name })}
                   </button>
                 ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <ChildSwitch children={children} selectedId={child.id} onSelect={setChildId} />
-          <RangeTabs />
-        </div>
-      </div>
+          </>
+        }
+        tools={
+          <>
+            <ChildSwitch children={children} selectedId={child.id} onSelect={setChildId} />
+            <RangeTabs />
+          </>
+        }
+      />
 
       <Card>
-        <p className="max-w-4xl text-lg leading-relaxed font-medium sm:text-[22px]">{summary}</p>
+        <p className="max-w-[56ch] text-[17px] leading-[1.75] font-medium text-ink sm:text-[21px]">{summary}</p>
       </Card>
 
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard
-          label={t("today.stats.screen")}
-          value={duration(t, screenS)}
-          note={t("today.stats.screenNote", { pct: percent(screenS, seen) })}
-          bar={{ pct: percent(screenS, seen), fill: "bg-screen", track: "bg-screen-soft" }}
-        />
-        <StatCard label={t("today.stats.multi")} value={duration(t, totals.multi_screen_s)} note={t("today.stats.multiNote")} />
-        <StatCard
-          label={t("today.stats.active")}
-          value={duration(t, totals.active_s)}
-          note={t("today.stats.activeNote", { pct: percent(totals.active_s, seen) })}
-          bar={{ pct: percent(totals.active_s, seen), fill: "bg-move", track: "bg-move-soft" }}
-        />
-        <StatCard label={t("today.stats.moments")} value={events.length} note={t("today.stats.momentsNote", { open: open.length })} />
-      </section>
+      <StatRow
+        items={[
+          {
+            label: t("today.stats.screen"),
+            value: duration(t, screenS),
+            note: t("today.stats.screenNote", { pct: percent(screenS, seen) }),
+            bar: { pct: percent(screenS, seen), fill: "bg-screen", track: "bg-screen-soft" },
+          },
+          { label: t("today.stats.multi"), value: duration(t, totals.multi_screen_s), note: t("today.stats.multiNote") },
+          {
+            label: t("today.stats.active"),
+            value: duration(t, totals.active_s),
+            note: t("today.stats.activeNote", { pct: percent(totals.active_s, seen) }),
+            bar: { pct: percent(totals.active_s, seen), fill: "bg-move", track: "bg-move-soft" },
+          },
+          { label: t("today.stats.moments"), value: events.length, note: t("today.stats.momentsNote", { open: open.length }) },
+        ]}
+      />
 
       <Card>
         <DayTimeline
@@ -114,10 +123,14 @@ export default function Dashboard() {
           events={events}
           theme={theme}
           sessionId={session.id}
+          videoUrl={USE_MOCKS ? null : session.video?.url}
+          frames={frames}
+          colorFor={colorFor}
+          nameFor={nameFor}
         />
       </Card>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid gap-5 lg:grid-cols-2">
         <Card>
           <h2 className="mb-5 text-lg font-bold">{t("today.breakdown.title")}</h2>
           <ul className="flex flex-col gap-3.5">
@@ -127,7 +140,7 @@ export default function Dashboard() {
                   <span>{t(`screen.${k}`)}</span>
                   <span className="font-semibold">{duration(t, totals[`${k}_s`])}</span>
                 </div>
-                <div className="h-2.5 rounded-full bg-[#f3efe8]">
+                <div className="h-2.5 rounded-full bg-[rgba(28,23,20,.06)]">
                   <div
                     className={`h-2.5 rounded-full ${k === "multi_screen" ? "bg-screen-2" : "bg-screen"}`}
                     style={{ width: `${(totals[`${k}_s`] / maxScreen) * 100}%` }}
@@ -137,10 +150,11 @@ export default function Dashboard() {
             ))}
           </ul>
           <p className="mt-5 text-[13px] text-muted">
-            {t("today.breakdown.longest", {
-              duration: duration(t, totals.longest_still.duration_s),
-              time: clock(locale, session.started_at, totals.longest_still.start_s),
-            })}
+            {totals.longest_still &&
+              t("today.breakdown.longest", {
+                duration: duration(t, totals.longest_still.duration_s),
+                time: clock(locale, session.started_at, totals.longest_still.start_s),
+              })}
           </p>
         </Card>
 
@@ -150,8 +164,13 @@ export default function Dashboard() {
           {events.length === 0 && <p className="py-6 text-body">{t("today.list.empty")}</p>}
           <ul>
             {events.map((e) => (
-              <li key={e.id} className="border-t border-[#f0eae2]">
-                <Link to={`/sessions/${session.id}?t=${e.start_s}`} className="flex min-h-14 items-center gap-3.5 py-3.5">
+              <li key={e.id} className="border-t border-[rgba(28,23,20,.1)] first:border-0">
+                <Link to={`/sessions/${session.id}?t=${e.start_s}`} className="flex min-h-14 items-center gap-3.5 py-3">
+                  <span className={`grid size-[38px] shrink-0 place-items-center rounded-xl ${severity(e) === "alert" ? "bg-alert-soft text-alert" : severity(e) === "ok" ? "bg-ok-soft text-ok" : "bg-look-soft text-look"}`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      {e.type === "fall" ? <path d="M4 20h16M7 16l4-4 3 2 5-6M17 8h2v2" /> : e.type === "danger_zone" ? <path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z" /> : <path d="M7 11l3-3 3 3 4-4M5 19h14" />}
+                    </svg>
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold">{t(`event.${e.type}`)}</span>
                     <span className="block text-[13px] text-muted">
@@ -169,7 +188,7 @@ export default function Dashboard() {
           {open.length > 0 && (
             <Link
               to="/alerts"
-              className="mt-3 flex min-h-12 items-center justify-center rounded-xl bg-clay text-sm font-semibold text-white hover:bg-clay-dark"
+              className="mt-4 flex min-h-[52px] items-center justify-center rounded-[18px] bg-clay text-[15px] font-semibold text-white hover:bg-rust"
             >
               {t("today.list.reviewAll")}
             </Link>

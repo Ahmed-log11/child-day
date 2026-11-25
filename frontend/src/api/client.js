@@ -34,6 +34,7 @@ const notify = () => listeners.forEach((cb) => cb());
 export const getChildren = () => request("/children");
 export const createChild = (child) => request("/children", json("POST", child));
 export const updateChild = (id, changes) => request(`/children/${id}`, json("PATCH", changes));
+export const deleteChild = (id) => request(`/children/${id}`, { method: "DELETE" });
 export const getZones = () => request("/zones");
 export const createZone = (zone) => request("/zones", json("POST", zone));
 export const deleteZone = (id) => request(`/zones/${id}`, { method: "DELETE" });

@@ -1,14 +1,14 @@
 // One child's profile: their color, averages, last 7 days and favorite screen.
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { getSummary, updateChild, USE_MOCKS } from "../api/client";
-import { useData } from "../lib/useData";
+import { updateChild, USE_MOCKS } from "../api/client";
 import { useChildren } from "../lib/useChildren";
 import { CHILD_COLORS, childTheme, rememberColor } from "../lib/children";
 import { duration, percent } from "../lib/format";
-import { avg, dateOf, screenOf } from "../lib/summary";
+import { ACTIVE_GOAL_S, avgOf as avg, history, screenOf, seen } from "../lib/history";
+import { dateOf } from "../lib/summary";
 import { usePageTint } from "../layout/AppShell";
-import { Card, StatCard } from "../components/Card";
+import { Card, StatRow } from "../components/Card";
 import { ChildSwitch } from "../components/ChildSwitch";
 import { PageState } from "../components/PageState";
 
@@ -20,14 +20,13 @@ export default function ChildProfile() {
   const child = children.find((c) => c.id === childId) ?? children[0];
   const theme = child ? childTheme(children, child.id) : null;
   usePageTint(theme?.tint ?? null);
-  const { data, error, loading } = useData(() => (child ? getSummary({ range: "week", childId: child.id }) : Promise.resolve(null)), [child?.id]);
-
-  if (loadingKids || kidsError || loading || error || !child || !data) {
-    return <PageState loading={loadingKids || loading} error={kidsError || error} />;
+  if (loadingKids || kidsError || !child) {
+    return <PageState loading={loadingKids} error={kidsError} />;
   }
 
-  const days = [...data.days].reverse();
-  const goal = data.guideline.active_target_s_per_day;
+  // Sample history, the same as on the Week page.
+  const days = seen(history(child.id, children.findIndex((c) => c.id === child.id), 7));
+  const goal = ACTIVE_GOAL_S;
   const totals = ["tv", "tablet", "phone"].map((k) => [k, days.reduce((s, d) => s + d[`${k}_s`], 0)]);
   const [favorite, favoriteS] = totals.sort((a, b) => b[1] - a[1])[0];
   const allScreen = days.reduce((s, d) => s + screenOf(d), 0);
@@ -47,22 +46,22 @@ export default function ChildProfile() {
   }
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-8 sm:px-6 sm:pt-10">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-5 px-4 pt-4 sm:px-6 sm:pt-6">
       <div className="flex flex-wrap items-center gap-5">
         <span
-          className="flex size-24 items-center justify-center rounded-[30px] border-[3px] bg-white text-4xl font-bold"
+          className="flex size-24 items-center justify-center rounded-[30px] border-[3px] bg-paper text-[40px] font-bold"
           style={{ borderColor: theme.color, color: theme.color }}
           aria-hidden="true"
         >
           {child.name.slice(0, 1)}
         </span>
         <div className="min-w-0 flex-1">
-          <h1 className="text-4xl font-bold tracking-tight">{child.name}</h1>
+          <h1 className="text-[clamp(34px,5vw,58px)] leading-[1.15] font-extrabold tracking-tight">{child.name}</h1>
           <div className="mt-1 text-body">
             {t("child.age")}: {t(`child.ages.${child.age_group}`)} · {t("child.since", { n: days.length })}
           </div>
         </div>
-        <Link to="/dashboard" className="flex min-h-11 items-center rounded-xl border border-[#ded5ca] bg-white px-4 text-sm font-semibold">
+        <Link to="/dashboard" className="flex min-h-11 items-center rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-5 text-sm font-semibold text-ink">
           {t("child.seeToday")}
         </Link>
       </div>
@@ -71,19 +70,21 @@ export default function ChildProfile() {
         <ChildSwitch children={children} selectedId={child.id} onSelect={(id) => navigate(`/children/${id}`)} />
       )}
 
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard label={t("child.stats.screen")} value={duration(t, avg(days, screenOf))} />
-        <StatCard
-          label={t("child.stats.active")}
-          value={duration(t, avg(days, (d) => d.active_s))}
-          note={t("child.activeNote", { goal: duration(t, goal) })}
-          bar={{ pct: (avg(days, (d) => d.active_s) / goal) * 100, fill: "bg-move", track: "bg-move-soft" }}
-        />
-        <StatCard label={t("child.stats.favorite")} value={t(`screen.${favorite}`)} note={t("child.favoriteNote", { pct: percent(favoriteS, allScreen) })} />
-        <StatCard label={t("child.stats.moments")} value={moments} note={t("child.momentsNote", { n: days.length })} />
-      </section>
+      <StatRow
+        items={[
+          { label: t("child.stats.screen"), value: duration(t, avg(days, screenOf)) },
+          {
+            label: t("child.stats.active"),
+            value: duration(t, avg(days, (d) => d.active_s)),
+            note: t("child.activeNote", { goal: duration(t, goal) }),
+            bar: { pct: (avg(days, (d) => d.active_s) / goal) * 100, fill: "bg-move", track: "bg-move-soft" },
+          },
+          { label: t("child.stats.favorite"), value: t(`screen.${favorite}`), note: t("child.favoriteNote", { pct: percent(favoriteS, allScreen) }) },
+          { label: t("child.stats.moments"), value: moments, note: t("child.momentsNote", { n: days.length }) },
+        ]}
+      />
 
-      <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <section className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-bold">{t("child.trend")}</h2>
@@ -119,13 +120,13 @@ export default function ChildProfile() {
                   aria-checked={on}
                   aria-label={c.color}
                   onClick={() => pickColor(c.color)}
-                  className="size-11 rounded-xl"
-                  style={{ background: c.color, boxShadow: on ? `0 0 0 3px #fff, 0 0 0 5px ${c.color}` : "none" }}
+                  className="size-[46px] rounded-[14px]"
+                  style={{ background: c.color, boxShadow: on ? `0 0 0 3px #FAF6F1, 0 0 0 5px ${c.color}` : "none" }}
                 />
               );
             })}
           </div>
-          <Link to="/setup" className="mt-5 inline-block text-sm font-semibold text-clay">
+          <Link to="/setup" className="mt-5 inline-block text-sm font-semibold text-rust">
             {t("child.edit")}
           </Link>
         </Card>

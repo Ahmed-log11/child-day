@@ -96,11 +96,11 @@ export function OverlayCanvas({ frame, colorFor, nameFor, showBoxes = true, show
 export function MockRoom() {
   return (
     <svg className="absolute inset-0 h-full w-full" viewBox="0 0 160 90" preserveAspectRatio="none" aria-hidden="true">
-      <rect width="160" height="90" fill="#23262E" />
-      <rect y="56" width="160" height="34" fill="#2B2F38" />
-      <rect x="6" y="12" width="37" height="30" rx="1" fill="#1B1D23" stroke="#3A3F4B" strokeWidth="0.6" />
-      <rect x="8" y="58" width="50" height="16" rx="4" fill="#3A342F" />
-      <rect x="118" y="22" width="30" height="40" rx="1" fill="#262A33" />
+      <rect width="160" height="90" fill="#2B221E" />
+      <rect y="56" width="160" height="34" fill="#35291F" />
+      <rect x="6" y="12" width="37" height="30" rx="1" fill="#1E1714" stroke="#4A3A30" strokeWidth="0.6" />
+      <rect x="8" y="58" width="50" height="16" rx="4" fill="#4A3628" />
+      <rect x="118" y="22" width="30" height="40" rx="1" fill="#3A2C22" />
     </svg>
   );
 }

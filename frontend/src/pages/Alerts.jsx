@@ -16,7 +16,7 @@ function Scene({ event, children }) {
   const other = children.find((c) => c.id !== event.child_id);
   const second = other ? childTheme(children, other.id).onDark : "#E7A3C6";
   return (
-    <div className="flex h-48 items-end justify-center gap-2 border-b-2 border-[#3A3F4B] pb-1" aria-hidden="true">
+    <div className="flex h-48 items-end justify-center gap-2 border-b-2 border-[rgba(28,23,20,.15)] pb-1" aria-hidden="true">
       {event.type === "violent_contact" && (
         <div className="relative flex items-end">
           <Figure pose="stand" color={main} width={78} />
@@ -93,27 +93,27 @@ export default function Alerts() {
               {t("event.who", { name: nameOf(current.child_id), time: clock(locale, session.started_at, current.start_s) })}
             </div>
           </div>
-          <div className="rounded-[20px] bg-[#16181D] px-4 pt-4 pb-2.5">
+          <div className="rounded-[20px] bg-peach px-4 pt-4 pb-2.5">
             {!USE_MOCKS && current.clip_url ? (
               <video key={current.id} src={current.clip_url} controls muted playsInline className="aspect-video w-full rounded-xl bg-black" />
             ) : (
               <Scene event={current} children={children} />
             )}
-            <div className="flex justify-between px-1 pt-2 text-xs text-[#9BA1AD]">
+            <div className="flex justify-between px-1 pt-2 font-mono text-xs text-muted">
               <span>{clock(locale, session.started_at, current.start_s)}</span>
               <span>{duration(t, current.end_s - current.start_s)}</span>
             </div>
           </div>
           <p className="text-[15px] leading-relaxed text-body">{t(`event.desc.${current.type}`, { name: nameOf(current.child_id) })}</p>
-          <Link to={`/sessions/${current.session_id}?t=${current.start_s}`} className="text-sm font-semibold text-clay">
+          <Link to={`/sessions/${current.session_id}?t=${current.start_s}`} className="text-sm font-semibold text-rust">
             {t("quick.watch")}
           </Link>
           <div className="text-lg font-bold">{t("quick.question")}</div>
           <div className="flex flex-col gap-2.5">
-            <button type="button" onClick={() => answer(current)} className="min-h-14 rounded-2xl bg-clay text-base font-semibold text-white hover:bg-clay-dark">
+            <button type="button" onClick={() => answer(current)} className="min-h-14 rounded-2xl bg-clay text-base font-semibold text-white hover:bg-rust">
               {t("quick.fine")}
             </button>
-            <button type="button" onClick={() => answer(current)} className="min-h-14 rounded-2xl border border-[#ded5ca] bg-white text-base font-semibold">
+            <button type="button" onClick={() => answer(current)} className="min-h-14 rounded-2xl border border-[rgba(28,23,20,.18)] bg-paper text-base font-semibold">
               {t("quick.follow")}
             </button>
           </div>
@@ -124,7 +124,7 @@ export default function Alerts() {
           <h2 className="text-2xl font-bold">{t("quick.doneTitle")}</h2>
           <p className="max-w-xs leading-relaxed text-body">{t("quick.doneText")}</p>
           {done.length > 0 && (
-            <button type="button" onClick={again} className="mt-2 min-h-12 rounded-xl border border-[#ded5ca] bg-white px-5 font-semibold">
+            <button type="button" onClick={again} className="mt-2 min-h-12 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-5 font-semibold">
               {t("quick.again")}
             </button>
           )}
@@ -136,7 +136,7 @@ export default function Alerts() {
           <h2 className="mb-1 text-sm font-semibold text-muted">{t("quick.reviewedList")}</h2>
           <ul>
             {done.map((a) => (
-              <li key={a.id} className="flex items-center gap-3 border-t border-[#f0eae2] py-3">
+              <li key={a.id} className="flex items-center gap-3 border-t border-[rgba(28,23,20,.1)] py-3">
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold">{t(`event.${a.type}`)}</span>
                   <span className="block text-xs text-muted">{t("event.who", { name: nameOf(a.child_id), time: clock(locale, session.started_at, a.start_s) })}</span>

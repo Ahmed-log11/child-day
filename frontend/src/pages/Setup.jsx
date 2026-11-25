@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { createChild, createZone, deleteZone, getChildren, getZones, updateChild } from "../api/client";
+import { createChild, createZone, deleteChild, deleteZone, getChildren, getZones, updateChild } from "../api/client";
 import { CHILD_COLORS, childTheme, rememberColor, useColorVersion } from "../lib/children";
 import { snapshot, useFirstFrame } from "../lib/frames";
 import { Card } from "../components/Card";
@@ -15,8 +15,8 @@ function Steps({ active }) {
   return (
     <ol className="flex flex-wrap items-center gap-2.5 text-sm">
       {tl("setup.steps").map((label, i) => (
-        <li key={label} className={`flex items-center gap-2 ${i <= active ? "font-semibold" : "text-muted"}`}>
-          <span className={`flex size-7 items-center justify-center rounded-full text-[13px] ${i <= active ? "bg-sun text-ink" : "border-[1.5px] border-[#cdbfae]"}`}>{i + 1}</span>
+        <li key={label} className={`flex items-center gap-2 ${i <= active ? "font-semibold text-ink" : "text-muted"}`}>
+          <span className={`flex size-7 items-center justify-center rounded-full font-mono text-xs ${i <= active ? "bg-clay text-white" : "border-[1.5px] border-[rgba(28,23,20,.18)]"}`}>{i + 1}</span>
           {label}
           {i < 2 && <span className="text-[#cdbfae]" aria-hidden="true">—</span>}
         </li>
@@ -38,8 +38,8 @@ function Swatches({ value, onPick, label }) {
             aria-checked={on}
             aria-label={c.color}
             onClick={() => onPick(c.color)}
-            className="size-9 rounded-[10px]"
-            style={{ background: c.color, boxShadow: on ? `0 0 0 3px #fff, 0 0 0 5px ${c.color}` : "none" }}
+            className="size-[34px] rounded-[11px]"
+            style={{ background: c.color, boxShadow: on ? `0 0 0 3px #FAF6F1, 0 0 0 5px ${c.color}` : "none" }}
           />
         );
       })}
@@ -58,6 +58,8 @@ export default function Setup() {
   const [color, setColor] = useState(CHILD_COLORS[0].color);
   const [problem, setProblem] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(null); // { id, name, age_group } while a child is being edited
+  const [removing, setRemoving] = useState(null); // id of the child waiting for "Delete?" confirmation
 
   // Frame of the room, from a video file or the camera.
   const [file, setFile] = useState(null);
@@ -106,6 +108,27 @@ export default function Setup() {
     }
   }
 
+  async function saveEdit() {
+    if (!editing.name.trim()) return;
+    try {
+      const saved = await updateChild(editing.id, { name: editing.name.trim(), age_group: editing.age_group });
+      setChildren((list) => list.map((c) => (c.id === saved.id ? { ...c, ...saved } : c)));
+      setEditing(null);
+    } catch (err) {
+      setProblem(t("setup.error", { msg: err.message }));
+    }
+  }
+
+  async function removeChild(id) {
+    try {
+      await deleteChild(id);
+      setChildren((list) => list.filter((c) => c.id !== id));
+      setRemoving(null);
+    } catch (err) {
+      setProblem(t("setup.error", { msg: err.message }));
+    }
+  }
+
   async function openCamera() {
     setCameraFrame(null);
     setFile(null);
@@ -131,10 +154,10 @@ export default function Setup() {
   const step = zones.length ? 2 : children.length ? 1 : 0;
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-7 sm:px-6 sm:pt-9">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-5 px-4 pt-4 sm:px-6 sm:pt-6">
       <Steps active={step} />
       <div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("setup.title")}</h1>
+        <h1 className="text-[clamp(34px,5vw,58px)] leading-[1.15] font-extrabold tracking-tight">{t("setup.title")}</h1>
         <p className="mt-2 max-w-2xl text-body">{t("setup.intro")}</p>
       </div>
       {offline && (
@@ -150,17 +173,75 @@ export default function Setup() {
           {children.map((c) => {
             const theme = childTheme(children, c.id);
             return (
-              <div key={c.id} className="overflow-hidden rounded-[20px] border border-line bg-white">
-                <div className="flex items-center gap-3.5 px-5 pt-5 pb-3" style={{ background: `linear-gradient(180deg, ${theme.tint}, #fff)` }}>
-                  <Avatar name={c.name} theme={theme} size={52} />
-                  <div>
-                    <div className="text-xl font-bold">{c.name}</div>
-                    <div className="text-sm text-muted">{t(`child.ages.${c.age_group}`)}</div>
-                  </div>
+              <div key={c.id} className="overflow-hidden rounded-[22px] border border-[rgba(28,23,20,.1)] bg-paper">
+                <div className="flex items-center gap-3.5 px-5 pt-5 pb-3" style={{ background: `linear-gradient(180deg, ${theme.tint}, #FAF6F1)` }}>
+                  <Avatar name={editing?.id === c.id ? editing.name || c.name : c.name} theme={theme} size={52} />
+                  {editing?.id === c.id ? (
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                      <input
+                        value={editing.name}
+                        onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                        aria-label={t("setup.name")}
+                        className="min-h-10 w-full rounded-[12px] border border-[rgba(28,23,20,.18)] bg-paper px-3 font-semibold text-ink"
+                      />
+                      <select
+                        value={editing.age_group}
+                        onChange={(e) => setEditing({ ...editing, age_group: e.target.value })}
+                        aria-label={t("setup.age")}
+                        className="min-h-10 rounded-[12px] border border-[rgba(28,23,20,.18)] bg-paper px-3 text-sm"
+                      >
+                        <option value="3-4">{t("child.ages.3-4")}</option>
+                        <option value="5-12">{t("child.ages.5-12")}</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xl font-bold text-ink">{c.name}</div>
+                      <div className="text-sm text-muted">{t(`child.ages.${c.age_group}`)}</div>
+                    </div>
+                  )}
                 </div>
                 <div className="px-5 pb-5">
                   <div className="mb-2.5 text-[13px] text-muted">{t("setup.colorOf", { name: c.name })}</div>
                   <Swatches value={theme.color} onPick={(v) => recolor(c, v)} label={t("setup.colorOf", { name: c.name })} />
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[rgba(28,23,20,.1)] pt-3.5">
+                    {editing?.id === c.id ? (
+                      <>
+                        <button type="button" onClick={saveEdit} className="min-h-9 rounded-full bg-clay px-4 text-sm font-semibold text-white hover:bg-rust">
+                          {t("setup.save")}
+                        </button>
+                        <button type="button" onClick={() => setEditing(null)} className="min-h-9 rounded-full px-3 text-sm font-semibold text-body hover:bg-[rgba(28,23,20,.05)]">
+                          {t("setup.cancel")}
+                        </button>
+                      </>
+                    ) : removing === c.id ? (
+                      <>
+                        <span className="text-sm text-ink">{t("setup.deleteChildQ", { name: c.name })}</span>
+                        <button type="button" onClick={() => removeChild(c.id)} className="min-h-9 rounded-full bg-alert px-4 text-sm font-semibold text-white">
+                          {t("setup.delete")}
+                        </button>
+                        <button type="button" onClick={() => setRemoving(null)} className="min-h-9 rounded-full px-3 text-sm font-semibold text-body hover:bg-[rgba(28,23,20,.05)]">
+                          {t("setup.cancel")}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRemoving(null);
+                            setEditing({ id: c.id, name: c.name, age_group: c.age_group });
+                          }}
+                          className="min-h-9 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold text-ink hover:border-clay"
+                        >
+                          {t("setup.edit")}
+                        </button>
+                        <button type="button" onClick={() => setRemoving(c.id)} className="ms-auto min-h-9 rounded-full px-3 text-sm font-semibold text-alert-text hover:bg-alert-soft">
+                          {t("setup.delete")}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -170,7 +251,7 @@ export default function Setup() {
               e.preventDefault();
               addChild();
             }}
-            className="flex flex-col gap-3 rounded-[20px] border-[1.5px] border-dashed border-[#d3c7b8] p-5"
+            className="flex flex-col gap-3 rounded-[22px] border-[1.5px] border-dashed border-[rgba(28,23,20,.18)] p-5"
           >
             {!children.length && <p className="text-sm text-body">{t("setup.noChildren")}</p>}
             <label className="flex flex-col gap-1.5 text-sm font-semibold">
@@ -182,18 +263,18 @@ export default function Setup() {
                   setProblem(null);
                 }}
                 placeholder={t("setup.namePlaceholder")}
-                className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3 font-normal"
+                className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3 font-normal"
               />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold">
               {t("setup.age")}
-              <select value={age} onChange={(e) => setAge(e.target.value)} className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3 font-normal">
+              <select value={age} onChange={(e) => setAge(e.target.value)} className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3 font-normal">
                 <option value="3-4">{t("child.ages.3-4")}</option>
                 <option value="5-12">{t("child.ages.5-12")}</option>
               </select>
             </label>
             <Swatches value={color} onPick={setColor} label={t("child.color")} />
-            <button type="submit" disabled={adding} className="min-h-11 rounded-xl border border-[#ded5ca] bg-white font-semibold hover:border-clay disabled:opacity-70">
+            <button type="submit" disabled={adding} className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper font-semibold hover:border-clay disabled:opacity-70">
               {adding ? t("setup.adding") : t("setup.add")}
             </button>
             {problem && (
@@ -210,7 +291,7 @@ export default function Setup() {
         <p className="mt-1 mb-5 text-sm text-muted">{t("setup.zonesNote")}</p>
         <div className="mb-4 flex flex-wrap items-center gap-2.5">
           <span className="text-sm font-semibold">{t("setup.from")}</span>
-          <label className="flex min-h-11 cursor-pointer items-center rounded-xl border border-[#ded5ca] bg-white px-4 text-sm font-semibold hover:border-clay">
+          <label className="flex min-h-11 cursor-pointer items-center rounded-xl border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold hover:border-clay">
             {t("setup.fromVideo")}
             <input
               type="file"
@@ -222,16 +303,16 @@ export default function Setup() {
               }}
             />
           </label>
-          <button type="button" onClick={openCamera} className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-4 text-sm font-semibold hover:border-clay">
+          <button type="button" onClick={openCamera} className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold hover:border-clay">
             {t("setup.fromCamera")}
           </button>
         </div>
 
         {cameraOn && (
           <div className="mb-4 flex flex-col gap-3">
-            <video ref={videoRef} muted playsInline className="aspect-video w-full rounded-2xl bg-[#23262E] object-cover" />
+            <video ref={videoRef} muted playsInline className="aspect-video w-full rounded-2xl bg-[#2b221e] object-cover" />
             <div className="flex gap-2.5">
-              <button type="button" onClick={takePhoto} className="min-h-11 rounded-xl bg-clay px-4 text-sm font-semibold text-white">
+              <button type="button" onClick={takePhoto} className="min-h-11 rounded-full bg-clay px-4 text-sm font-semibold text-white">
                 {t("setup.takePhoto")}
               </button>
               <button
@@ -240,7 +321,7 @@ export default function Setup() {
                   streamRef.current?.getTracks().forEach((tr) => tr.stop());
                   setCameraOn(false);
                 }}
-                className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-4 text-sm font-semibold"
+                className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold"
               >
                 {t("setup.cancel")}
               </button>
@@ -258,13 +339,13 @@ export default function Setup() {
             }}
           />
         ) : (
-          !cameraOn && <p className="rounded-2xl bg-cream p-6 text-center text-sm text-body">{t("setup.noFrame")}</p>
+          !cameraOn && <p className="rounded-[20px] bg-[rgba(28,23,20,.04)] p-6 text-center text-sm text-body">{t("setup.noFrame")}</p>
         )}
 
         <ul className="mt-5 flex flex-col gap-2">
           {!zones.length && <li className="text-sm text-muted">{t("setup.noZones")}</li>}
           {zones.map((z) => (
-            <li key={z.id} className="flex items-center gap-3 rounded-2xl border border-line px-4 py-3">
+            <li key={z.id} className="flex items-center gap-3 rounded-[18px] border border-[rgba(28,23,20,.1)] bg-paper py-2 ps-4 pe-2">
               <span className="size-3.5 rounded-[3px] border-2 border-dashed border-look" />
               <span className="flex-1 font-semibold">{z.name}</span>
               <button
@@ -282,8 +363,8 @@ export default function Setup() {
         </ul>
       </Card>
 
-      <div className="flex justify-end">
-        <Link to="/upload" className="flex min-h-12 items-center rounded-xl bg-clay px-6 font-semibold text-white hover:bg-clay-dark">
+      <div className="flex justify-start">
+        <Link to="/upload" className="flex min-h-[54px] items-center rounded-full bg-clay px-7 text-base font-semibold text-white hover:bg-rust">
           {t("setup.continue")}
         </Link>
       </div>

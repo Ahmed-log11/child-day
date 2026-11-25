@@ -336,7 +336,10 @@
     "continue": "Continue to first video",
     "cameraError": "We couldn’t open the camera: {msg}",
     "error": "Couldn’t save: {msg}",
-    "offline": "Setup saves to the server. Check your connection: {msg}"
+    "offline": "Setup saves to the server. Check your connection: {msg}",
+    "edit": "Edit",
+    "save": "Save",
+    "deleteChildQ": "Delete {name}?"
   },
   "landing": {
     "nav": {
@@ -400,5 +403,137 @@
       "ok": "Reviewed, all fine"
     },
     "footer": "A computer vision project, Tuwaiq Academy 2026"
+  },
+  "ov": {
+    "screen": "Screen time",
+    "active": "Active play",
+    "moments": "Moments",
+    "perDay": "{v} a day",
+    "perDayShort": "{v} / day",
+    "perDayLabel": "a day, on average",
+    "noVideo": "No video for this hour or day",
+    "soon": "Soon",
+    "sample": "Earlier days are sample history for the demo. The latest day comes from the video we analyzed."
+  },
+  "wk": {
+    "insight": "Screens were {screen} than the week before · {day} was the most active day · {moments}, {open} still to check.",
+    "less": "{pct}% lower",
+    "more": "{pct}% higher",
+    "moments": "{n} moments",
+    "open": "{n} not reviewed yet",
+    "balance": "Activity and balance",
+    "ofDays": "{n} of {total}",
+    "goalDays": "days reached {goal} of active play",
+    "activeAvg": "Active play, average",
+    "longStill": "Long still stretches",
+    "longStillDays": "{n} days with over an hour still",
+    "ratio": "For every hour of screens, there were {n} minutes of active play.",
+    "when": "When are screens used?",
+    "whenNote": "Screen minutes in each hour",
+    "less2": "Less",
+    "more2": "More",
+    "devices": "Screens by device",
+    "devicesNote": "Share of the {seen} we saw. Two screens at once count once.",
+    "onScreens": "on screens",
+    "noScreen": "No screen",
+    "sessions": "Screen sessions",
+    "longestSession": "Longest continuous session",
+    "multiShare": "{pct}% of all screen time",
+    "momentsTitle": "Moments to review",
+    "openAll": "Open all",
+    "notReviewed": "Not reviewed",
+    "together": "Playing together",
+    "togetherText": "How long the children play together. Coming next, it's not counted in the report yet.",
+    "where": "Where they spend time",
+    "whereText": "Which parts of the room each child uses. Coming next: this is only a picture for now."
+  },
+  "mo": {
+    "insight": "A calmer month: screens were {screen} than last month, and active play was {active}.",
+    "activeMore": "{pct}% higher",
+    "activeLess": "{pct}% lower",
+    "coverage": "Data coverage",
+    "coverageText": "About {video} of video a day, on {n} of {total} days so far.",
+    "coverageNote": "Every number on this page only covers the time the camera was on.",
+    "thisMonth": "this month",
+    "daysOf": "{n} of {total} days",
+    "calendar": "Month calendar",
+    "calendarNote": "{month} · screen time each day",
+    "level": {
+      "high": "High (over 3 h)",
+      "mid": "Medium (2–3 h)",
+      "low": "Low (under 2 h)"
+    },
+    "moment": "Moment",
+    "trend": "4-week trend",
+    "minPerDay": "min / day",
+    "weekN": "Week {n}",
+    "weekVsWeekend": "Weekdays vs weekend",
+    "weekdays": "Weekdays",
+    "weekend": "Weekend (Fri–Sat)",
+    "pdf": "Download the month (PDF)"
+  },
+  "ln": {
+    "brand": "Kanaf · Child Day",
+    "h1a": "Your child’s day,",
+    "h1b": "in your ",
+    "h1acc": "care.",
+    "sub": "Kanaf turns your home camera into a calm picture of the day: time on every screen, how much they moved, and the few moments worth a look. All in one place.",
+    "start": "Get started",
+    "sample": "See a sample day",
+    "ages": "For parents of children aged 3 to 12",
+    "how": "How it works",
+    "privacy": "Privacy",
+    "card": {
+      "title": "Sara’s Tuesday",
+      "line": "3h 10m screens · 42 min active",
+      "chip": "2 moments worth a look",
+      "initial": "S"
+    },
+    "feats": [
+      [
+        "Every screen, counted",
+        "TV, tablet and phone, and the time spent on two at once."
+      ],
+      [
+        "How much they moved",
+        "Active play, light movement and long still stretches, next to the WHO goal for their age."
+      ],
+      [
+        "A few moments worth a look",
+        "Falls, a visit to a spot you marked, or rough play. Flagged with a short clip for you to judge."
+      ]
+    ],
+    "chips": [
+      "Kitchen zone · 12:40",
+      "Possible fall · 14:05",
+      "Reviewed, all fine"
+    ],
+    "howSub": "Computer vision does the watching, so you only read the result.",
+    "steps": [
+      [
+        "Add a video, or go live",
+        "Upload a recording from your home camera, or use your webcam."
+      ],
+      [
+        "We find people and screens",
+        "Each child is tracked as a body outline. TVs, tablets and phones are found around them."
+      ],
+      [
+        "The day becomes a timeline",
+        "Screens, movement and moments, minute by minute."
+      ],
+      [
+        "You check a few moments",
+        "Short clips of anything worth a look. You decide what it was."
+      ]
+    ],
+    "privTitle": "We see movement, not faces.",
+    "priv": [
+      "Children are tracked as body outlines, the same lines you see on this page.",
+      "Only the timeline and short clips of flagged moments matter. The video is for your eyes only.",
+      "Every flag is a question for you, not a verdict about your child.",
+      "Delete any child or place at any time."
+    ],
+    "footer": "Kanaf · A computer vision project, Tuwaiq Academy 2026"
   }
 }

@@ -121,12 +121,12 @@ export default function Live() {
         </div>
         {running || status === "stopping" ? (
           <button type="button" onClick={stop} disabled={status === "stopping"} className="flex min-h-12 items-center gap-2 rounded-xl bg-ink px-5 font-semibold text-white">
-            <span className="size-2.5 rounded-sm bg-white" />
+            <span className="size-2.5 rounded-sm bg-paper" />
             {status === "stopping" ? t("live.stopping") : t("live.stop")}
           </button>
         ) : (
-          <button type="button" onClick={start} disabled={status === "starting"} className="flex min-h-12 items-center gap-2 rounded-xl bg-clay px-5 font-semibold text-white hover:bg-clay-dark disabled:opacity-70">
-            <span className="size-2.5 rounded-full bg-white" />
+          <button type="button" onClick={start} disabled={status === "starting"} className="flex min-h-12 items-center gap-2 rounded-full bg-clay px-5 font-semibold text-white hover:bg-rust disabled:opacity-70">
+            <span className="size-2.5 rounded-full bg-paper" />
             {status === "starting" ? t("live.starting") : t("live.start")}
           </button>
         )}
@@ -139,12 +139,12 @@ export default function Live() {
       )}
 
       <div className="flex flex-col gap-5 lg:flex-row">
-        <section className="min-w-0 flex-[2] rounded-[22px] bg-[#16181D] p-3 sm:p-4">
-          <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#23262E]">
+        <section className="min-w-0 flex-[2] rounded-[22px] bg-peach p-3 sm:p-4">
+          <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#2b221e]">
             <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
             <OverlayCanvas frame={frame} colorFor={colorFor} nameFor={nameFor} />
             {status === "idle" && (
-              <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-[#C9CDD6]">{t("live.camera")}</div>
+              <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-[#E8DCD0]">{t("live.camera")}</div>
             )}
             {running && (
               <span className="absolute start-3 bottom-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-xs font-semibold text-white">
@@ -168,7 +168,7 @@ export default function Live() {
             const child = list.find((c) => c.id === p.child_id);
             const theme = childTheme(list, p.child_id);
             return (
-              <div key={p.track_id} className="overflow-hidden rounded-[20px] border border-line bg-white">
+              <div key={p.track_id} className="overflow-hidden rounded-[22px] border border-[rgba(28,23,20,.1)] bg-paper">
                 <div className="flex items-center gap-3 px-5 pt-4 pb-2" style={{ background: `linear-gradient(180deg, ${theme.tint}, #fff)` }}>
                   {child && <Avatar name={child.name} theme={theme} size={40} />}
                   <div className="text-lg font-bold">{child?.name ?? `#${p.track_id}`}</div>

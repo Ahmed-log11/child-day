@@ -58,7 +58,7 @@ export function ZoneDrawer({ frame, zones, onSave }) {
       <button
         type="button"
         onClick={addPoint}
-        className="relative block aspect-video w-full cursor-crosshair overflow-hidden rounded-2xl bg-[#23262E]"
+        className="relative block aspect-video w-full cursor-crosshair overflow-hidden rounded-2xl bg-[#2b221e]"
         aria-label={t("setup.drawHint")}
       >
         <img src={frame} alt="" className="h-full w-full object-cover" draggable="false" />
@@ -74,16 +74,16 @@ export function ZoneDrawer({ frame, zones, onSave }) {
               setProblem(null);
             }}
             placeholder={t("setup.zonePlaceholder")}
-            className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3 font-normal"
+            className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3 font-normal"
           />
         </label>
-        <button type="button" onClick={() => setPoints((p) => p.slice(0, -1))} className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3.5 text-sm font-semibold">
+        <button type="button" onClick={() => setPoints((p) => p.slice(0, -1))} className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3.5 text-sm font-semibold">
           {t("setup.undo")}
         </button>
-        <button type="button" onClick={() => setPoints([])} className="min-h-11 rounded-xl border border-[#ded5ca] bg-white px-3.5 text-sm font-semibold">
+        <button type="button" onClick={() => setPoints([])} className="min-h-11 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-3.5 text-sm font-semibold">
           {t("setup.clear")}
         </button>
-        <button type="button" onClick={save} disabled={saving} className="min-h-11 rounded-xl bg-clay px-4 text-sm font-semibold text-white disabled:opacity-70">
+        <button type="button" onClick={save} disabled={saving} className="min-h-11 rounded-full bg-clay px-4 text-sm font-semibold text-white disabled:opacity-70">
           {t("setup.saveZone")}
         </button>
       </div>

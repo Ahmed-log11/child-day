@@ -17,10 +17,14 @@ def test_create_child_and_zone():
     assert child["color"] == "#7B5CC6"
     updated = client.patch(f"/children/{child['id']}", json={"color": "#B5508C"}).json()
     assert updated["color"] == "#B5508C"
+    renamed = client.patch(f"/children/{child['id']}", json={"name": "Sarah", "age_group": "3-4"}).json()
+    assert (renamed["name"], renamed["age_group"]) == ("Sarah", "3-4")
     assert child["id"].startswith("c_")
     zone = client.post("/zones", json={"name": "Kitchen", "polygon": [[0, 0], [1, 0], [1, 1]]}).json()
     assert zone["id"].startswith("z_")
     assert client.delete(f"/zones/{zone['id']}").json() == {"deleted": True}
+    assert client.delete(f"/children/{child['id']}").json() == {"deleted": True}
+    assert all(c["id"] != child["id"] for c in client.get("/children").json())
 
 
 def test_session_report_shape():
