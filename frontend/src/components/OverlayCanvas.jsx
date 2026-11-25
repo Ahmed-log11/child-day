@@ -83,7 +83,9 @@ export function OverlayCanvas({ frame, colorFor, nameFor, showBoxes = true, show
         roundRect(ctx, X(x1), Y(y1), X(x2 - x1), Y(y2 - y1), 8);
         ctx.stroke();
         const name = nameFor(person.child_id) ?? `#${person.track_id}`;
-        const state = person.screen && person.screen !== "none" ? t(`screen.${person.screen}`) : t(`activity.${person.activity}`);
+        const parts = [person.screen && person.screen !== "none" ? t(`screen.${person.screen}`) : t(`activity.${person.activity}`)];
+        if (person.intake && person.intake !== "none") parts.push(t(`intake.${person.intake}`));
+        const state = parts.join(" · ");
         label(`${name} · ${state}`, X(x1), Y(y1), color, "#1C1A26");
       }
     }

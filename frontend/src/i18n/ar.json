@@ -50,8 +50,11 @@
         "active": "نشط",
         "light": "خفيف",
         "look": "تستحق نظرة",
-        "alert": "راجعها الآن"
-      }
+        "alert": "راجعها الآن",
+        "eating": "يأكل",
+        "drinking": "يشرب"
+      },
+      "intake": "الأكل"
     },
     "breakdown": {
       "title": "أين ذهب وقت الشاشات",
@@ -89,7 +92,8 @@
     "active": "يتحرك كثيرًا",
     "light": "يتحرك قليلًا",
     "still": "جالس بدون حركة",
-    "sentence": "{screen}، {activity}"
+    "sentence": "{screen}، {activity}",
+    "withIntake": "{sentence} · {intake}"
   },
   "event": {
     "fall": "سقوط محتمل",
@@ -535,5 +539,9 @@
       "احذف أي طفل أو مكان متى شئت."
     ],
     "footer": "كنف · مشروع رؤية حاسوبية، أكاديمية طويق 2026"
+  },
+  "intake": {
+    "eating": "يأكل",
+    "drinking": "يشرب"
   }
 }

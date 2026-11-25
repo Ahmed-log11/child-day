@@ -4,7 +4,7 @@ Owner: P1 (with P2's safety parts plugged in).
 
 Per frame:
     perception  -> objects + people (track_id, box, keypoints)
-    child match -> track_id -> child_id (order of appearance, re-linked after ID switches)
+    child match -> track_id -> child_id (order of appearance; torso colors re-link lost children and catch ID swaps)
     screens     -> TV on/off, who holds which device, screen state per person
     activity    -> movement score per person -> active / light / still
                    eating / drinking per person (activity.IntakeWatcher) -> "intake"
@@ -45,6 +45,13 @@ TRACK_FORGET_S = 15.0         # drop per-track buffers after this long unseen
 # speed: objects (TV, tablet, phone) barely move, so detect them every N frames and reuse the boxes
 OBJECTS_EVERY_N = 2
 
+# appearance: torso colors tell children apart when the tracker loses them or swaps IDs
+REID_MIN_SIM = 0.25           # a lost child is re-linked only if the colors match at least this much (0-1)
+REID_MARGIN = 0.10            # ...and better than any known other person by this much
+SIG_LEARN_FRAMES = 6          # frames used to learn a child's (or another person's) colors
+SIG_UPDATE_MIN = 0.5          # keep adapting a child's colors only on frames that clearly match
+SWAP_FRAMES = 3               # a track that looks like someone else for this many frames is unlinked
+
 # activity
 ACTIVITY_AVG_S = 2.0          # movement is averaged over this window before activity_state()
 MAX_MOVE_DT = 2.0             # frames further apart than this are not compared
@@ -74,6 +81,38 @@ def _center(box):
 
 def _dist(a, b) -> float:
     return float(np.hypot(a[0] - b[0], a[1] - b[1]))
+
+
+def _torso_colors(frame, person):
+    """Hue/saturation histogram of the torso (shoulders to hips), or None if too small to tell."""
+    if frame is None:
+        return None
+    import cv2
+
+    h, w = frame.shape[:2]
+    x1, y1, x2, y2 = person["box"]
+    kps = person.get("keypoints") or []
+    if len(kps) == 17 and min(kps[i][2] for i in (5, 6, 11, 12)) >= 0.35:
+        xs = [kps[i][0] for i in (5, 6, 11, 12)]
+        ys = [kps[i][1] for i in (5, 6, 11, 12)]
+        pad = (max(xs) - min(xs)) * 0.1
+        tx1, tx2, ty1, ty2 = min(xs) + pad, max(xs) - pad, min(ys), max(ys)
+    else:
+        bw, bh = x2 - x1, y2 - y1
+        tx1, tx2, ty1, ty2 = x1 + bw * 0.25, x2 - bw * 0.25, y1 + bh * 0.2, y1 + bh * 0.5
+    X1, X2 = int(max(0, tx1 * w)), int(min(w, tx2 * w))
+    Y1, Y2 = int(max(0, ty1 * h)), int(min(h, ty2 * h))
+    if X2 - X1 < 6 or Y2 - Y1 < 6:
+        return None
+    hsv = cv2.cvtColor(frame[Y1:Y2, X1:X2], cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([hsv], [0, 1], None, [12, 4], [0, 180, 0, 256]).flatten()
+    total = hist.sum()
+    return hist / total if total else None
+
+
+def _similar(a, b) -> float:
+    """Histogram intersection: 1 = same colors, 0 = nothing in common."""
+    return float(np.minimum(a, b).sum())
 
 
 def _mean_kp_conf(person) -> float:
@@ -114,6 +153,11 @@ class Engine:
         self.track_to_child: dict[int, str] = {}
         self.child_tracks: dict[str, list[int]] = {c["id"]: [] for c in self.children}
         self.child_last: dict[str, dict] = {}          # child_id -> {"t", "box"}
+        self.child_sig: dict[str, np.ndarray] = {}      # child_id -> torso color histogram
+        self.child_sig_n: Counter = Counter()
+        self.other_sig: dict[int, np.ndarray] = {}      # unlinked track_id -> colors (adults, visitors)
+        self.other_sig_n: Counter = Counter()
+        self._mismatch: Counter = Counter()
         self._track_seen: Counter = Counter()
         self._tracks: dict[int, dict] = {}             # per-track buffers
 
@@ -175,10 +219,54 @@ class Engine:
         return child["id"]
 
     # ---------------------------------------------------------- child matching
+    def _learn(self, store: dict, counts: Counter, key, sig, rate: float | None = None) -> None:
+        n = counts[key]
+        if key not in store:
+            store[key] = sig.copy()
+        elif rate is None:
+            store[key] = (store[key] * n + sig) / (n + 1)     # running mean while learning
+        else:
+            store[key] = store[key] * (1 - rate) + sig * rate  # slow update afterwards
+        counts[key] = n + 1
+
+    def _best_other(self, sig, tid: int) -> float:
+        """Best color match against people who are not children. A track's own learned colors
+        count only once they are settled (so a returning child doesn't block itself)."""
+        best = 0.0
+        for otid, osig in self.other_sig.items():
+            if otid == tid and self.other_sig_n[otid] < SIG_LEARN_FRAMES:
+                continue
+            best = max(best, _similar(osig, sig))
+        return best
+
     def _match_children(self, people: list[dict], t: float) -> None:
         visible = {self.track_to_child[p["track_id"]] for p in people if p["track_id"] in self.track_to_child}
+
+        # 1. Linked tracks: learn the child's colors, and unlink a track that now looks like someone else
+        #    (ByteTrack sometimes hands one person's ID to another when they cross).
+        for p in people:
+            tid, sig = p["track_id"], p.get("_sig")
+            cid = self.track_to_child.get(tid)
+            if cid is None or sig is None:
+                continue
+            if self.child_sig_n[cid] < SIG_LEARN_FRAMES:
+                self._learn(self.child_sig, self.child_sig_n, cid, sig)
+                continue
+            sc = _similar(self.child_sig[cid], sig)
+            if sc + REID_MARGIN < self._best_other(sig, tid):
+                self._mismatch[tid] += 1
+            else:
+                self._mismatch[tid] = 0
+                if sc >= SIG_UPDATE_MIN:
+                    self._learn(self.child_sig, self.child_sig_n, cid, sig, rate=0.05)
+            if self._mismatch[tid] >= SWAP_FRAMES:
+                del self.track_to_child[tid]
+                visible.discard(cid)
+                self._mismatch[tid] = 0
+
+        # 2. Unlinked tracks: a new child, a lost child coming back, or someone else.
         for p in sorted(people, key=lambda q: q["track_id"]):
-            tid = p["track_id"]
+            tid, sig = p["track_id"], p.get("_sig")
             if tid in self.track_to_child:
                 continue
             self._track_seen[tid] += 1
@@ -191,22 +279,37 @@ class Engine:
             if never_seen:
                 chosen = never_seen[0]                       # order of appearance
             else:
-                # ByteTrack lost someone and gave them a new ID: re-link to the nearest lost child
-                pc = _center(p["box"])
-                best_d = None
-                for cid in free:
-                    last = self.child_last.get(cid)
-                    if not last:
-                        continue
-                    d = _dist(pc, _center(last["box"]))
-                    if d <= REID_MAX_DIST and (best_d is None or d < best_d):
-                        chosen, best_d = cid, d
+                # Colors first: the free child that looks most like this person, clearly more than anyone else.
+                if sig is not None:
+                    best_other = self._best_other(sig, tid)
+                    scored = [(_similar(self.child_sig[cid], sig), cid) for cid in free
+                              if self.child_sig_n[cid] >= SIG_LEARN_FRAMES]
+                    if scored:
+                        sc, cid = max(scored)
+                        if sc >= REID_MIN_SIM and sc >= best_other + REID_MARGIN:
+                            chosen = cid
+                # No colors learned yet: re-link to the nearest lost child, as before.
+                if chosen is None:
+                    pc = _center(p["box"])
+                    best_d = None
+                    for cid in free:
+                        last = self.child_last.get(cid)
+                        if not last or self.child_sig_n[cid] >= SIG_LEARN_FRAMES:
+                            continue
+                        d = _dist(pc, _center(last["box"]))
+                        if d <= REID_MAX_DIST and (best_d is None or d < best_d):
+                            chosen, best_d = cid, d
                 if chosen is None and self.auto_children and len(self.children) < MAX_AUTO_CHILDREN:
                     chosen = self._add_child()
             if chosen is not None:
                 self.track_to_child[tid] = chosen
-                self.child_tracks[chosen].append(tid)
+                if tid not in self.child_tracks[chosen]:
+                    self.child_tracks[chosen].append(tid)
                 visible.add(chosen)
+                self.other_sig.pop(tid, None)
+                self.other_sig_n.pop(tid, None)
+            elif sig is not None and self.other_sig_n[tid] < SIG_LEARN_FRAMES:
+                self._learn(self.other_sig, self.other_sig_n, tid, sig)   # someone who isn't a child
 
     # --------------------------------------------------------------- activity
     def _track_buffers(self, tid: int) -> dict:
@@ -355,6 +458,8 @@ class Engine:
         tvs_on = [tv for tv in tvs if tv["on"]]
 
         # child matching + devices
+        for p in people:
+            p["_sig"] = _torso_colors(frame, p)
         self._match_children(people, t)
         held = screens.assign_devices(people, objects)
         holder = {id(o): tid for tid, objs in held.items() for o in objs}

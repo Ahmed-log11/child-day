@@ -12,6 +12,7 @@ import { FrameView } from "./FrameView";
 
 const SCREEN_COLOR = { tv: "bg-screen", tablet: "bg-screen", phone: "bg-screen", multi_screen: "bg-screen-2" };
 const MOVE_COLOR = { active: "bg-move", light: "bg-move-light" };
+const INTAKE_COLOR = { eating: "bg-[#C27C3A]", drinking: "bg-[#5BA4C0]" };
 const DOT_COLOR = { look: "bg-look", alert: "bg-alert", ok: "bg-ok" };
 
 function skyColor(hour) {
@@ -40,7 +41,11 @@ export function DayTimeline({ startedAt, durationS, segments, events, theme, ses
 
   const screen = stateAt(segments, "screen", second) ?? "none";
   const activity = stateAt(segments, "activity", second) ?? "still";
+  const intake = stateAt(segments, "intake", second) ?? "none";
   const momentNow = events.find((e) => e.start_s - 3 <= second && second <= e.end_s + 10);
+  // Eating and drinking get their own lane, only when there is something to show.
+  const intakeSegs = segments.filter((s) => s.category === "intake" && INTAKE_COLOR[s.state]);
+  const sentence = t("now.sentence", { screen: t(`now.${screen}`), activity: t(`now.${activity}`) });
 
   const legend = [
     ["bg-screen", "screen"],
@@ -60,6 +65,13 @@ export function DayTimeline({ startedAt, durationS, segments, events, theme, ses
               {t(`today.timeline.legend.${key}`)}
             </li>
           ))}
+          {intakeSegs.length > 0 &&
+            ["eating", "drinking"].map((k) => (
+              <li key={k} className="flex items-center gap-1.5">
+                <span className={`size-3 rounded-[3px] ${INTAKE_COLOR[k]}`} />
+                {t(`today.timeline.legend.${k}`)}
+              </li>
+            ))}
           <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-look" />{t("today.timeline.legend.look")}</li>
           <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-alert" />{t("today.timeline.legend.alert")}</li>
         </ul>
@@ -70,6 +82,7 @@ export function DayTimeline({ startedAt, durationS, segments, events, theme, ses
           <span className="text-[12.5px] font-medium text-muted">{t("today.timeline.moments")}</span>
           <span>{t("today.timeline.screens")}</span>
           <span>{t("today.timeline.moving")}</span>
+          {intakeSegs.length > 0 && <span>{t("today.timeline.intake")}</span>}
         </div>
 
         <div className="relative overflow-hidden rounded-2xl py-3">
@@ -114,6 +127,18 @@ export function DayTimeline({ startedAt, durationS, segments, events, theme, ses
                   <div key={s.start_s} className={`absolute inset-y-0 rounded-[7px] ${MOVE_COLOR[s.state]}`} style={span(s.start_s, s.end_s)} />
                 ))}
             </div>
+            {intakeSegs.length > 0 && (
+              <div className="relative h-6">
+                {intakeSegs.map((s) => (
+                  <div
+                    key={s.start_s}
+                    title={t(`intake.${s.state}`)}
+                    className={`absolute inset-y-0 min-w-1.5 rounded-[7px] ${INTAKE_COLOR[s.state]}`}
+                    style={span(s.start_s, s.end_s)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <div className="pointer-events-none absolute inset-y-0 z-[2] w-0.5 bg-rust" style={at(second)}>
             <span className="absolute -top-px -start-1 size-2.5 rounded-full bg-rust" />
@@ -176,7 +201,7 @@ export function DayTimeline({ startedAt, durationS, segments, events, theme, ses
           <div className="min-w-0">
             <div className="font-mono text-xs text-muted tabular-nums">{clock(locale, startedAt, second)}</div>
             <div className="mt-0.5 text-lg leading-snug font-semibold text-ink sm:text-[21px]">
-              {t("now.sentence", { screen: t(`now.${screen}`), activity: t(`now.${activity}`) })}
+              {intake !== "none" ? t("now.withIntake", { sentence, intake: t(`intake.${intake}`) }) : sentence}
             </div>
             {momentNow && (
               <div className="mt-2 flex flex-wrap items-center gap-2.5">

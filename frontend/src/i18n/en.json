@@ -50,8 +50,11 @@
         "active": "Active",
         "light": "Light",
         "look": "Worth a look",
-        "alert": "Check now"
-      }
+        "alert": "Check now",
+        "eating": "Eating",
+        "drinking": "Drinking"
+      },
+      "intake": "Eating"
     },
     "breakdown": {
       "title": "Where the screen time went",
@@ -89,7 +92,8 @@
     "active": "moving a lot",
     "light": "moving a little",
     "still": "sitting still",
-    "sentence": "{screen}, {activity}"
+    "sentence": "{screen}, {activity}",
+    "withIntake": "{sentence} · {intake}"
   },
   "event": {
     "fall": "Possible fall",
@@ -535,5 +539,9 @@
       "Delete any child or place at any time."
     ],
     "footer": "Kanaf · A computer vision project, Tuwaiq Academy 2026"
+  },
+  "intake": {
+    "eating": "Eating",
+    "drinking": "Drinking"
   }
 }

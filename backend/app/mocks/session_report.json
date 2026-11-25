@@ -167,6 +167,27 @@
       "state": "present",
       "start_s": 0,
       "end_s": 900
+    },
+    {
+      "child_id": "c1",
+      "category": "intake",
+      "state": "eating",
+      "start_s": 300,
+      "end_s": 420
+    },
+    {
+      "child_id": "c1",
+      "category": "intake",
+      "state": "drinking",
+      "start_s": 610,
+      "end_s": 640
+    },
+    {
+      "child_id": "c2",
+      "category": "intake",
+      "state": "drinking",
+      "start_s": 120,
+      "end_s": 150
     }
   ],
   "totals": {
