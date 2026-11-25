@@ -75,11 +75,11 @@ export default function AppShell() {
         style={{ background: tint ? `linear-gradient(180deg, ${tint} 0px, var(--color-page) 520px)` : undefined }}
       >
         <header className="sticky top-0 z-30 px-3 py-3 sm:px-4 print:hidden">
-          <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4">
-            <Link to="/" className="rounded-full">
+          <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+            <Link to="/" className="w-fit rounded-full">
               <Logo />
             </Link>
-            <nav aria-label={t("nav.menu")} className="mx-auto hidden items-center gap-0.5 lg:flex">
+            <nav aria-label={t("nav.menu")} className="hidden items-center gap-0.5 lg:flex">
               {NAV.map((item) => (
                 <Link
                   key={item.key}
@@ -94,7 +94,7 @@ export default function AppShell() {
                 </Link>
               ))}
             </nav>
-            <div className="ms-auto flex items-center gap-2 lg:ms-0">
+            <div className="ms-auto flex items-center gap-2 lg:justify-self-end">
               <LangToggle />
               <NavLink
                 to="/live"

@@ -8,20 +8,6 @@ import { LangToggle } from "../layout/AppShell";
 import { Hud } from "../components/FrameView";
 import { CAMERA_ART } from "../components/cameraArt";
 
-function MiniTimeline() {
-  const blk = (l, w, c) => <i key={`${l}${c}`} className="absolute inset-y-0 rounded-[5px]" style={{ left: `${l}%`, width: `${w}%`, background: c }} />;
-  return (
-    <div className="flex flex-col gap-1.5" dir="ltr">
-      <div className="relative h-[26px] overflow-hidden rounded-lg bg-[rgba(28,23,20,.06)]">
-        {[blk(10, 9, "#2F4F86"), blk(19, 3, "#1B2F55"), blk(43, 6, "#2F4F86"), blk(79, 11, "#2F4F86")]}
-      </div>
-      <div className="relative h-[11px] overflow-hidden rounded-md bg-[rgba(28,23,20,.06)]">
-        {[blk(25, 8, "#2E9C8C"), blk(57, 11, "#9FD3C9"), blk(68, 5, "#2E9C8C")]}
-      </div>
-    </div>
-  );
-}
-
 const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
 export default function Landing() {
@@ -66,14 +52,15 @@ export default function Landing() {
           style={{ transform: dir === "rtl" ? "scaleX(-1)" : undefined }}
           dangerouslySetInnerHTML={{ __html: CAMERA_ART }}
         />
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-48 bg-[linear-gradient(180deg,transparent,var(--color-page))]" aria-hidden="true" />
         <span className="pointer-events-none absolute inset-x-5 top-24 bottom-5 hidden md:block" aria-hidden="true">
           <Hud />
         </span>
 
         <header className="relative z-[3] px-3 py-4 sm:px-4">
-          <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4">
+          <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
             <Logo />
-            <nav className="ms-6 hidden gap-0.5 lg:flex">
+            <nav className="hidden gap-0.5 lg:flex">
               <button type="button" onClick={() => scrollTo("how")} className="min-h-10 rounded-full px-4 text-sm text-body hover:bg-[rgba(28,23,20,.05)]">
                 {t("ln.how")}
               </button>
@@ -81,7 +68,7 @@ export default function Landing() {
                 {t("ln.privacy")}
               </button>
             </nav>
-            <div className="ms-auto flex items-center gap-2">
+            <div className="ms-auto flex items-center gap-2 lg:justify-self-end">
               <LangToggle />
               <Link to="/dashboard" className="hidden min-h-[38px] items-center rounded-full border border-[rgba(28,23,20,.18)] px-3.5 text-[13.5px] font-semibold sm:flex">
                 {t("ln.sample")}
@@ -93,7 +80,7 @@ export default function Landing() {
           </div>
         </header>
 
-        <div className="relative z-[2] mx-auto grid max-w-[1180px] items-end gap-10 px-4 pt-4 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] lg:pt-6">
+        <div className="relative z-[2] mx-auto grid max-w-[1180px] items-end gap-10 px-4 pt-4 pb-28 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] lg:pt-6 lg:pb-32">
           <div>
             <h1 className={`mb-6 text-[clamp(44px,7vw,100px)] font-black tracking-tight ${dir === "rtl" ? "leading-[1.3]" : "leading-[1.05]"}`} dir={dir}>
               <span className="block">
@@ -127,26 +114,11 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="glass rounded-[28px] p-5">
-            <div className="flex items-center gap-3">
-              <span className="grid size-[38px] place-items-center rounded-xl border-2 border-[#7B5CC6] bg-[#ECE5FA] font-bold text-[#7B5CC6]">{t("ln.card.initial")}</span>
-              <div>
-                <b className="block text-ink">{t("ln.card.title")}</b>
-                <span className="text-[12.5px] text-muted">{t("ln.card.line")}</span>
-              </div>
-            </div>
-            <div className="mt-5">
-              <MiniTimeline />
-            </div>
-            <div className="mt-4">
-              <StatusChip kind="look" label={t("ln.card.chip")} />
-            </div>
-          </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
-        <section className="relative z-[3] -mt-9 grid gap-5 md:grid-cols-3">
+        <section className="relative z-[3] -mt-16 grid gap-5 md:grid-cols-3">
           {feats.map(([title, text], i) => (
             <div key={title} className="glass flex flex-col gap-3 rounded-[28px] p-[18px]">
               <div className="flex h-[118px] items-center justify-center rounded-[20px] bg-[rgba(28,23,20,.05)] px-[18px] py-3.5">{visuals[i]}</div>

@@ -100,21 +100,22 @@ button {
   }
 }
 
+/* Negative top/bottom insets keep accents and Arabic dots below the line visible */
 @keyframes type {
   from {
-    clip-path: inset(0 100% 0 0);
+    clip-path: inset(-0.35em 100% -0.45em -0.1em);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(-0.35em -0.1em -0.45em -0.1em);
   }
 }
 
 @keyframes typer {
   from {
-    clip-path: inset(0 0 0 100%);
+    clip-path: inset(-0.35em -0.1em -0.45em 100%);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(-0.35em -0.1em -0.45em -0.1em);
   }
 }
 
