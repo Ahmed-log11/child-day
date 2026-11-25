@@ -22,6 +22,7 @@ export default function Processing() {
         const next = await getJob(jobId);
         if (!alive) return;
         setJob(next);
+        setProblem(null); // a single failed poll (Wi-Fi blip) shouldn't leave an error on screen
         if (next.status === "done") {
           timer = setTimeout(() => navigate("/dashboard"), 1500);
           return;
