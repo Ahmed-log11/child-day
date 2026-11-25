@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
-import { getFrames, getSession, swapChildren, USE_MOCKS } from "../api/client";
+import { getDayAdvice, getFrames, getSession, swapChildren, USE_MOCKS } from "../api/client";
+import { dayAdvice } from "../lib/advice";
+import { AdviceCard, ExportButton } from "../components/AdviceCard";
 import { useData } from "../lib/useData";
 import { childTheme, severity, useColorVersion, useSelectedChild } from "../lib/children";
 import { RangeTabs } from "../components/RangeTabs";
@@ -22,7 +24,7 @@ function Strong({ className, children }) {
 }
 
 export default function Dashboard() {
-  const { t, locale } = useI18n();
+  const { t, locale, lang } = useI18n();
   const { data: loaded, error, loading } = useData(() => getSession("latest"), []);
   const [swapped, setSwapped] = useState(null); // the session after the parent swapped two names
   const session = swapped ?? loaded;
@@ -34,6 +36,10 @@ export default function Dashboard() {
   const { data: frames } = useData(() => (session ? getFrames(session.id).catch(() => null) : Promise.resolve(null)), [session?.id]);
   const colorFor = (id) => childTheme(children, id).onDark;
   const nameFor = (id) => children.find((c) => c.id === id)?.name;
+  const { data: ai, loading: aiLoading } = useData(
+    () => (session && child ? getDayAdvice(session.id, child.id, lang).catch(() => null) : Promise.resolve(null)),
+    [session?.id, child?.id, lang],
+  );
 
   if (loading || error || !child) return <PageState loading={loading} error={error} />;
 
@@ -88,6 +94,7 @@ export default function Dashboard() {
           <>
             <ChildSwitch children={children} selectedId={child.id} onSelect={setChildId} />
             <RangeTabs />
+            <ExportButton to={`/report?range=day&child=${child.id}`} />
           </>
         }
       />
@@ -113,6 +120,17 @@ export default function Dashboard() {
           },
           { label: t("today.stats.moments"), value: events.length, note: t("today.stats.momentsNote", { open: open.length }) },
         ]}
+      />
+
+      <AdviceCard
+        loading={aiLoading}
+        ai={Boolean(ai?.advice?.length)}
+        items={ai?.advice?.length ? ai.advice : dayAdvice(t, { child, totals, segments, events })}
+        links={{
+          review: `/alerts?child=${child.id}`,
+          export: `/report?range=day&child=${child.id}`,
+          specialist: `/report?range=day&child=${child.id}&for=specialist`,
+        }}
       />
 
       <Card>
@@ -176,7 +194,7 @@ export default function Dashboard() {
                     <span className="block text-[13px] text-muted">
                       {t("event.duration", {
                         time: clock(locale, session.started_at, e.start_s),
-                        length: duration(t, e.end_s - e.start_s),
+                        length: duration(t, Math.max(1, e.end_s - e.start_s)),
                       })}
                     </span>
                   </span>
@@ -187,7 +205,7 @@ export default function Dashboard() {
           </ul>
           {open.length > 0 && (
             <Link
-              to="/alerts"
+              to={`/alerts?child=${child.id}`}
               className="mt-4 flex min-h-[52px] items-center justify-center rounded-[18px] bg-clay text-[15px] font-semibold text-white hover:bg-rust"
             >
               {t("today.list.reviewAll")}

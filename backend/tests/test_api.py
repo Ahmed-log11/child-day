@@ -58,3 +58,35 @@ def test_live_websocket():
     with client.websocket_connect(f"/live/{sid}") as ws:
         ws.send_json({"t": 1.0, "image": ""})
         assert ws.receive_json()["frame"]["t"] == 1.0
+
+
+def test_insights_without_claude_fall_back():
+    # No ANTHROPIC_API_KEY in tests: the frontend shows its own advice
+    r = client.post("/insights/day", json={"session_id": "s1", "child_id": "c1", "lang": "en"})
+    assert r.status_code == 200
+    assert r.json() == {"advice": None, "source": "none"}
+    assert client.post("/insights/day", json={"session_id": "s1", "child_id": "nobody"}).status_code == 404
+    r = client.post("/insights/ask", json={"session_id": "s1", "question": "How much did Sara move?"})
+    assert r.status_code == 200 and r.json()["answer"] is None
+
+
+def test_insights_with_claude(monkeypatch):
+    from app import advice
+
+    calls = []
+
+    def fake(system, prompt, max_tokens):
+        calls.append(prompt)
+        if "advice items" in prompt:
+            return 'Sure: [{"title": "Move more", "text": "Sara was active 2.3 min.", "action": "export"},' \
+                   ' {"title": "Bad", "text": "x", "action": "launch"}]'
+        return "Sara moved a lot."
+
+    monkeypatch.setattr(advice, "_ask_claude", fake)
+    r = client.post("/insights/day", json={"session_id": "s1", "child_id": "c2", "lang": "ar"}).json()
+    assert r["source"] == "ai" and r["advice"][0]["action"] == "export" and r["advice"][1]["action"] == "none"
+    # only numbers are sent, and the answer is cached
+    assert '"screens_minutes"' in calls[0] and "Omar" in calls[0]
+    client.post("/insights/day", json={"session_id": "s1", "child_id": "c2", "lang": "ar"})
+    assert len(calls) == 1
+    assert client.post("/insights/ask", json={"session_id": "s1", "question": "Did Sara move?"}).json()["answer"] == "Sara moved a lot."

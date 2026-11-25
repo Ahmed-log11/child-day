@@ -156,14 +156,28 @@ Uploaded videos are served at `/media/uploads/...`; `video.url` in a saved repor
 { "reviewed": true }
 ```
 
-### Insights (stretch goal)
-`POST /insights/ask`
+### Insights (Claude)
+Written by Claude from the report's numbers only (minutes, moments and their times; no video).
+Needs `ANTHROPIC_API_KEY` on the server (`INSIGHTS_MODEL` picks the model, default `claude-haiku-5-5`).
+Without it, `advice` / `answer` is `null` and the frontend writes its own advice from the numbers.
+
+`POST /insights/day` (advice for one child's day; saved in the report, so one call per child and language)
 ```json
-{ "question": "How was Sara's week compared to last week?", "child_id": "c1" }
+{ "session_id": "latest", "child_id": "c1", "lang": "en" }
 ```
 →
 ```json
-{ "answer": "Sara's screen time went up 18% ...", "sources": ["summary:week:2026-11-25"] }
+{ "advice": [{ "title": "Check 1 moment", "text": "...", "action": "review" }], "source": "ai" }
+```
+`action` is `review`, `export`, `specialist` or `none` (the button under the advice).
+
+`POST /insights/ask`
+```json
+{ "question": "How much did Sara move?", "child_id": null, "session_id": "latest", "lang": "ar" }
+```
+→
+```json
+{ "answer": "...", "source": "ai", "sources": ["2026-11-25"] }
 ```
 
 ## Session report

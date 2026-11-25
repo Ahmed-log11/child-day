@@ -137,6 +137,7 @@ def swap_children(session_id: str, body: Swap, db: DbSession = Depends(get_db)):
     for item in report["segments"] + report["events"]:
         item["child_id"] = flip(item.get("child_id"))
     report["totals"] = {flip(k): v for k, v in report["totals"].items()}
+    report.pop("advice", None)  # advice names the children: write it again after a swap
     row.report = report
     flag_modified(row, "report")
     db.commit()

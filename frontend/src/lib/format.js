@@ -2,7 +2,7 @@
 
 export function duration(t, seconds) {
   const total = Math.round(seconds / 60);
-  if (seconds > 0 && seconds < 60) return t("time.s", { s: Math.round(seconds) });
+  if (seconds > 0 && seconds < 60) return t("time.s", { s: Math.max(1, Math.round(seconds)) });
   const h = Math.floor(total / 60);
   const m = total % 60;
   if (h && m) return t("time.hm", { h, m });

@@ -178,7 +178,7 @@ export default function VideoReview() {
                   <dd className="font-semibold">{childName(current.child_id)}</dd>
                   <dt className="text-muted">{t("review.length")}</dt>
                   <dd className="font-semibold">
-                    {clock(locale, session.started_at, current.start_s)} · {duration(t, current.end_s - current.start_s)}
+                    {clock(locale, session.started_at, current.start_s)} · {duration(t, Math.max(1, current.end_s - current.start_s))}
                   </dd>
                   <dt className="text-muted">{t("review.sure")}</dt>
                   <dd className="font-semibold">{t("review.sureValue", { pct: Math.round(current.confidence * 100) })}</dd>

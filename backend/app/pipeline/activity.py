@@ -206,12 +206,13 @@ class IntakeWatcher:
             self.cup_at_mouth_since = None
         drinking = self.last_drinking_t is not None and t - self.last_drinking_t <= DRINK_HOLD_S
 
-        # eating: count a bite only when it isn't a sip
-        if reached_mouth and not drinking_now:
+        # eating: count a bite only when food is around and it isn't a sip
+        # (no cup at the mouth, in the hand, or just drunk from)
+        food_recent = self.last_food_t is not None and t - self.last_food_t <= FOOD_MEMORY_S
+        if reached_mouth and food_recent and not (drinking_now or drinking or cup_recent):
             self.bites.append(t)
         while self.bites and self.bites[0] < t - EAT_WINDOW_S:
             self.bites.popleft()
-        food_recent = self.last_food_t is not None and t - self.last_food_t <= FOOD_MEMORY_S
         eating = food_recent and len(self.bites) >= EAT_MIN_BITES
 
         if drinking:

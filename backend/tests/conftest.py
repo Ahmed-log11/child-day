@@ -2,3 +2,4 @@
 import os
 
 os.environ["USE_MOCK_PIPELINE"] = "true"
+os.environ["ANTHROPIC_API_KEY"] = ""  # advice tests never call Claude

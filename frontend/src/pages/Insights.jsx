@@ -6,7 +6,7 @@ import { LogoMark } from "../components/Logo";
 import { Card } from "../components/Card";
 
 export default function Insights() {
-  const { t, tl } = useI18n();
+  const { t, tl, lang } = useI18n();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState(null);
   const [problem, setProblem] = useState(null);
@@ -22,7 +22,8 @@ export default function Insights() {
     setBusy(true);
     setProblem(null);
     try {
-      setAnswer({ question: q, ...(await askInsights(q)) });
+      const res = await askInsights(q, lang);
+      setAnswer({ question: q, ...res, answer: res.answer ?? t("ask.offline") });
     } catch (err) {
       setProblem(t("ask.error", { msg: err.message }));
     } finally {
@@ -83,7 +84,7 @@ export default function Insights() {
           </div>
           <p className="mb-2 text-sm text-muted">{answer.question}</p>
           <p className="text-lg leading-relaxed">{answer.answer}</p>
-          {answer.sources?.length > 0 && (
+          {answer.source === "ai" && answer.sources?.length > 0 && (
             <p className="mt-4 text-[13px] text-muted">
               {t("ask.sources")} {answer.sources.join(" · ")}
             </p>

@@ -93,10 +93,9 @@ export default function Landing() {
           </div>
         </header>
 
-        <div className="relative z-[2] mx-auto grid max-w-[1180px] items-end gap-10 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] lg:pt-14">
+        <div className="relative z-[2] mx-auto grid max-w-[1180px] items-end gap-10 px-4 pt-4 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] lg:pt-6">
           <div>
-            <span className="mono text-[#6B564B]">{t("ln.brand")}</span>
-            <h1 className="mt-4 mb-6 text-[clamp(44px,7vw,100px)] leading-[1.05] font-black tracking-tight" dir={dir}>
+            <h1 className="mb-6 text-[clamp(44px,7vw,100px)] leading-[1.05] font-black tracking-tight" dir={dir}>
               <span className="block">
                 <span className="typing">{t("ln.h1a")}</span>
               </span>
@@ -136,12 +135,9 @@ export default function Landing() {
                 <span className="text-[12.5px] text-muted">{t("ln.card.line")}</span>
               </div>
             </div>
-            <div className="mx-auto my-4 flex w-fit justify-center gap-1.5 rounded-[22px] bg-[rgba(28,23,20,.06)] px-6 pt-3.5">
-              <Figure pose="sit" color="#1C1714" width={74} />
-              <Figure pose="tablet" color="#1C1714" width={74} />
-              <Figure pose="run" color="#2E9C8C" width={74} />
+            <div className="mt-5">
+              <MiniTimeline />
             </div>
-            <MiniTimeline />
             <div className="mt-4">
               <StatusChip kind="look" label={t("ln.card.chip")} />
             </div>
@@ -186,10 +182,10 @@ export default function Landing() {
         </section>
 
         <section id="privacy" className="my-14 grid overflow-hidden rounded-[34px] bg-peach lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
-          <div className="relative flex items-end justify-center gap-2 bg-[radial-gradient(circle_at_50%_70%,rgba(217,105,45,.22),transparent_60%),#FFF4EA] px-5 pt-10 pb-8">
+          <div className="relative flex min-h-[340px] items-end justify-center gap-4 bg-[radial-gradient(circle_at_50%_70%,rgba(217,105,45,.22),transparent_60%),#FFF4EA] px-5 pt-10 pb-8">
             <Hud />
-            <Figure pose="stand" color="#7B5CC6" width={120} />
-            <Figure pose="run" color="#B5508C" width={120} />
+            <Figure pose="stand" color="#7B5CC6" width={190} />
+            <Figure pose="run" color="#B5508C" width={190} />
           </div>
           <div className="p-7 sm:p-11">
             <span className="mono text-clay">{t("ln.privacy")}</span>

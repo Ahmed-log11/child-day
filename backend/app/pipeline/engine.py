@@ -50,7 +50,7 @@ REID_MIN_SIM = 0.25           # a lost child is re-linked only if the colors mat
 REID_MARGIN = 0.10            # ...and better than any known other person by this much
 SIG_LEARN_FRAMES = 6          # frames used to learn a child's (or another person's) colors
 SIG_UPDATE_MIN = 0.5          # keep adapting a child's colors only on frames that clearly match
-SWAP_FRAMES = 3               # a track that looks like someone else for this many frames is unlinked
+SWAP_FRAMES = 6               # a track that looks like someone else for this many frames (2 s) is unlinked
 
 # activity
 ACTIVITY_AVG_S = 2.0          # movement is averaged over this window before activity_state()
@@ -242,8 +242,8 @@ class Engine:
     def _match_children(self, people: list[dict], t: float) -> None:
         visible = {self.track_to_child[p["track_id"]] for p in people if p["track_id"] in self.track_to_child}
 
-        # 1. Linked tracks: learn the child's colors, and unlink a track that now looks like someone else
-        #    (ByteTrack sometimes hands one person's ID to another when they cross).
+        # 1. Linked tracks: learn the child's colors, and unlink a track that now looks like someone else,
+        #    another child or an adult (ByteTrack sometimes hands one person's ID to another when they cross).
         for p in people:
             tid, sig = p["track_id"], p.get("_sig")
             cid = self.track_to_child.get(tid)
@@ -253,7 +253,10 @@ class Engine:
                 self._learn(self.child_sig, self.child_sig_n, cid, sig)
                 continue
             sc = _similar(self.child_sig[cid], sig)
-            if sc + REID_MARGIN < self._best_other(sig, tid):
+            rival = max([self._best_other(sig, tid)] +
+                        [_similar(self.child_sig[o], sig) for o in self.child_sig
+                         if o != cid and self.child_sig_n[o] >= SIG_LEARN_FRAMES])
+            if sc + REID_MARGIN < rival:
                 self._mismatch[tid] += 1
             else:
                 self._mismatch[tid] = 0
@@ -464,6 +467,8 @@ class Engine:
         held = screens.assign_devices(people, objects)
         holder = {id(o): tid for tid, objs in held.items() for o in objs}
 
+        # width / height, so fall.py measures the torso angle in real proportions (16:9 videos)
+        aspect = frame.shape[1] / frame.shape[0] if frame is not None else 1.0
         out_people = []
         for p in people:
             tid = p["track_id"]
@@ -474,7 +479,7 @@ class Engine:
             p["intake"] = buf["intake"].update(t, p["keypoints"], p["box"], objects)
             buf["last_t"] = t
             buf["history"].append({"t": t, "track_id": tid, "child_id": p["child_id"],
-                                   "box": p["box"], "keypoints": p["keypoints"]})
+                                   "box": p["box"], "keypoints": p["keypoints"], "aspect": aspect})
             while buf["history"] and buf["history"][0]["t"] < t - FALL_HISTORY_S:
                 buf["history"].popleft()
             if p["child_id"]:

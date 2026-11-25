@@ -12,7 +12,9 @@ import { RangeTabs } from "../components/RangeTabs";
 import { PageState } from "../components/PageState";
 import { PageHead } from "../components/PageHead";
 import { StatusChip } from "../components/StatusChip";
-import { Banner, Donut, Icon, ICONS, Kpi, NO_VIDEO, Ring, Soon, screenShade } from "../components/Overview";
+import { weekAdvice } from "../lib/advice";
+import { AdviceCard, ExportButton } from "../components/AdviceCard";
+import { Banner, Donut, Icon, ICONS, Kpi, NO_VIDEO, Ring, screenShade } from "../components/Overview";
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7:00 to 21:00
 const DEVICES = [
@@ -90,6 +92,7 @@ export default function Week() {
           <>
             <ChildSwitch children={children} selectedId={child.id} onSelect={select} />
             <RangeTabs />
+            <ExportButton to={`/report?range=week&child=${child.id}`} />
           </>
         }
       />
@@ -141,6 +144,15 @@ export default function Week() {
           </div>
         </Card>
       </div>
+
+      <AdviceCard
+        items={weekAdvice(t, { child, week, before, open: openMoments, longDay })}
+        links={{
+          review: `/alerts?child=${child.id}`,
+          export: `/report?range=week&child=${child.id}`,
+          specialist: `/report?range=week&child=${child.id}&for=specialist`,
+        }}
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <Card>
@@ -205,7 +217,7 @@ export default function Week() {
         </Card>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,.9fr)_minmax(0,1.1fr)]">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <Card>
           <h2 className="mb-4 text-[19px] font-semibold">{t("wk.sessions")}</h2>
           <ul className="flex flex-col gap-4">
@@ -233,7 +245,7 @@ export default function Week() {
         <Card>
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 className="text-[19px] font-semibold">{t("wk.momentsTitle")}</h2>
-            <Link to="/alerts" className="flex items-center gap-1.5 text-sm font-semibold text-rust">
+            <Link to={`/alerts?child=${child.id}`} className="flex items-center gap-1.5 text-sm font-semibold text-rust">
               {t("wk.openAll")}
               <Icon d={ICONS.arrow} size={15} className="flip" />
             </Link>
@@ -259,13 +271,6 @@ export default function Week() {
           </ul>
         </Card>
 
-        <Soon title={t("wk.together")} text={t("wk.togetherText")} />
-        <Soon title={t("wk.where")} text={t("wk.whereText")}>
-          <div className="relative h-24 overflow-hidden rounded-2xl bg-[#2b221e]">
-            <span className="absolute top-6 left-[30%] size-16 rounded-full bg-[radial-gradient(closest-side,rgba(217,105,45,.75),transparent)]" />
-            <span className="absolute top-10 left-[62%] size-10 rounded-full bg-[radial-gradient(closest-side,rgba(217,105,45,.6),transparent)]" />
-          </div>
-        </Soon>
       </div>
 
       <p className="text-[13px] text-muted">{t("ov.sample")}</p>

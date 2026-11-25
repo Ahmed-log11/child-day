@@ -161,7 +161,8 @@
     "doneText": "You checked every moment. Your answers help us flag better.",
     "again": "See them again",
     "reviewedList": "Already reviewed",
-    "note": "Flagged for you to check. Not a verdict."
+    "note": "Flagged for you to check. Not a verdict.",
+    "allChildren": "All children"
   },
   "upload": {
     "title": "Add a day",
@@ -285,21 +286,22 @@
   },
   "ask": {
     "title": "Ask about your children’s days",
-    "intro": "Answers come only from the reports Kanaf made, so you can always see where a number came from.",
+    "intro": "Ask about the latest analyzed day. Claude answers from Kanaf's numbers only: no video leaves Kanaf.",
     "label": "Your question",
     "placeholder": "Is Sara’s screen time going up?",
     "send": "Ask",
     "thinking": "Thinking…",
     "suggestions": [
-      "Is screen time going up this week?",
-      "When is Omar most active?",
-      "What happened on Friday?",
-      "Compare Sara and Omar this week"
+      "How much did Sara move?",
+      "Who spent more time on screens?",
+      "What should I check first?",
+      "Did anyone eat or drink?"
     ],
     "sources": "Based on:",
     "empty": "Type a question first.",
     "error": "Couldn’t get an answer: {msg}",
-    "note": "Kanaf describes what it saw. It doesn’t give medical or parenting advice."
+    "note": "Kanaf describes what it saw. It doesn’t give medical or parenting advice.",
+    "offline": "Claude isn't connected yet, so there's no answer. The Today page still shows advice written from the numbers."
   },
   "setup": {
     "title": "Set up your home",
@@ -543,5 +545,122 @@
   "intake": {
     "eating": "Eating",
     "drinking": "Drinking"
+  },
+  "adv": {
+    "title": "What we'd suggest",
+    "aiBadge": "Claude",
+    "loading": "Reading the day…",
+    "byAi": "Written by Claude from these numbers only (no video leaves Kanaf). Not medical advice.",
+    "byRules": "Written from these numbers. Not medical advice.",
+    "exportShort": "Export report",
+    "act": {
+      "review": "Review the moments",
+      "export": "Export the report",
+      "specialist": "Export for a specialist"
+    },
+    "review": {
+      "one": "Check 1 moment",
+      "many": "Check {n} moments",
+      "text": "{name} has moments you haven't looked at yet: {list}. A quick look takes a minute."
+    },
+    "fall": {
+      "title": "After the fall",
+      "text": "If {name} seemed hurt, or falls keep happening, a pediatrician can take a look. Export the report to show them."
+    },
+    "rough": {
+      "title": "Rough play",
+      "text": "{name} had {n} rough play moments. Talk about taking turns. If it keeps happening, a child counselor can help."
+    },
+    "multi": {
+      "title": "One screen at a time",
+      "text": "{name} used two screens at once for {time}, {pct}% of screen time. One screen at a time is easier to follow and to stop."
+    },
+    "moveLow": {
+      "title": "Room to move more",
+      "text": "{name} was active for {active} of the {seen} we saw. A short game or a walk helps toward 60 active minutes a day."
+    },
+    "moveGood": {
+      "title": "Good moving",
+      "text": "{name} was active for {active} of the {seen} we saw. Keep the play going."
+    },
+    "still": {
+      "title": "Break up long sits",
+      "text": "The longest still stretch was {time}. A short stretch or walk every half hour helps."
+    },
+    "drink": {
+      "title": "Drinking",
+      "text": "{name} was seen drinking for {time}. Keeping water close helps on active days."
+    },
+    "keep": {
+      "title": "Keep a copy",
+      "text": "Export this report to keep it, or to share it with family or a specialist."
+    },
+    "wScreen": {
+      "title": "Screens",
+      "less": "{name} averaged {avg} a day on screens, {pct}% less than last week. Whatever changed is working.",
+      "more": "{name} averaged {avg} a day on screens, {pct}% more than last week. Screen-free times, like meals, can help."
+    },
+    "wGoal": {
+      "title": "60 active minutes",
+      "good": "{name} reached 60 active minutes on {n} of {days} days. {best} was the most active day.",
+      "low": "{name} reached 60 active minutes on only {n} of {days} days. {best} was the best day: what happened then is worth repeating."
+    },
+    "wMulti": "{name} used two screens at once for {pct}% of screen time this week. One screen at a time is easier to follow and to stop.",
+    "wMoments": {
+      "title": "{n} moments this week",
+      "open": "{n} of them are still waiting for you. A quick review keeps nothing important missed.",
+      "done": "You've reviewed them all. If the same kind keeps coming back, a specialist can look at the report."
+    },
+    "mTrend": {
+      "title": "Four-week trend",
+      "text": "Over four weeks, {name}'s screens went from {s1} to {s2} a day, and active play from {a1} to {a2}."
+    },
+    "mWeekend": {
+      "title": "Weekends",
+      "text": "Screens are {pct}% higher on the weekend ({we} a day against {wd}). A weekend outing or game can balance it."
+    },
+    "mScreen": {
+      "less": "{name} averaged {avg} a day on screens, {pct}% less than last month.",
+      "more": "{name} averaged {avg} a day on screens, {pct}% more than last month."
+    },
+    "mGoal": "{name} reached 60 active minutes on {n} of {days} days with video, and had {moments} moments this month. Export the month to keep a record."
+  },
+  "rep": {
+    "title": {
+      "day": "Kanaf · Day report",
+      "week": "Kanaf · Week report",
+      "month": "Kanaf · Month report"
+    },
+    "back": "← Back",
+    "download": "Download PDF",
+    "forSpecialist": "For a specialist",
+    "howTo": "Download PDF opens the print window: choose “Save as PDF”.",
+    "age": "Age {ages}",
+    "made": "Made on {date}",
+    "recorded": "{time} recorded",
+    "summary": "Summary",
+    "screensMoving": "Screens and moving",
+    "what": "What",
+    "time": "Time",
+    "at": "At",
+    "length": "Length",
+    "status": "Status",
+    "longestStill": "Longest still stretch",
+    "notReviewed": "Not reviewed",
+    "noMoments": "No moments were flagged.",
+    "byDay": "Day by day",
+    "day": "Day",
+    "noVideo": "No video",
+    "daysWithVideo": "{n} of {total} days with video",
+    "specialistTitle": "Prepared for a specialist",
+    "specialistText": "This report shows patterns in {name}'s day from a home camera: time on screens, movement, and moments flagged for a parent to check. Children are tracked as body outlines only. It is a record to support a conversation, not a diagnosis.",
+    "notes": "Parent's notes and questions",
+    "notesHint": "What you noticed, and what you'd like to ask.",
+    "footer": [
+      "Made by Kanaf from home video.",
+      "Only body outlines are used, no faces.",
+      "Moments are flags for a parent to check, not verdicts.",
+      "This is not medical advice."
+    ]
   }
 }

@@ -12,6 +12,9 @@ import { RangeTabs } from "../components/RangeTabs";
 import { PageState } from "../components/PageState";
 import { PageHead } from "../components/PageHead";
 import { Banner, Icon, ICONS, Kpi, NO_VIDEO } from "../components/Overview";
+import { Link } from "react-router-dom";
+import { monthAdvice } from "../lib/advice";
+import { AdviceCard, ExportButton } from "../components/AdviceCard";
 
 const LEVELS = [
   ["high", "#2F4F86", 3 * 3600],
@@ -119,6 +122,7 @@ export default function Month() {
           <>
             <ChildSwitch children={children} selectedId={child.id} onSelect={select} />
             <RangeTabs />
+            <ExportButton to={`/report?range=month&child=${child.id}`} />
           </>
         }
       />
@@ -149,6 +153,15 @@ export default function Month() {
         <Kpi icon={ICONS.moment} label={t("ov.moments")} value={moments} sub={t("mo.thisMonth")} />
         <Kpi icon={ICONS.camera} label={t("mo.coverage")} value={`${coverage}%`} sub={t("mo.daysOf", { n: days.length, total: thisMonth.length })} />
       </div>
+
+      <AdviceCard
+        items={monthAdvice(t, { child, thisMonth, lastMonth, weeks })}
+        links={{
+          review: `/alerts?child=${child.id}`,
+          export: `/report?range=month&child=${child.id}`,
+          specialist: `/report?range=month&child=${child.id}&for=specialist`,
+        }}
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <Card>
@@ -222,11 +235,13 @@ export default function Month() {
           <div className="mt-3 mb-2 text-[13px] font-semibold text-ink">{t("ov.active")}</div>
           <Bar label={t("mo.weekdays")} value={activeWd} max={Math.max(activeWd, activeWe)} color="#9FD3C9" />
           <Bar label={t("mo.weekend")} value={activeWe} max={Math.max(activeWd, activeWe)} color="#2E9C8C" />
-          <button type="button" disabled className="mt-auto flex min-h-11 items-center justify-center gap-2 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold text-ink">
+          <Link
+            to={`/report?range=month&child=${child.id}`}
+            className="mt-auto flex min-h-11 items-center justify-center gap-2 rounded-full border border-[rgba(28,23,20,.18)] bg-paper px-4 text-sm font-semibold text-ink hover:border-clay"
+          >
             <Icon d={ICONS.download} size={18} />
             {t("mo.pdf")}
-            <span className="rounded-full bg-[rgba(28,23,20,.07)] px-2 text-[11px] text-muted">{t("ov.soon")}</span>
-          </button>
+          </Link>
         </Card>
       </div>
 

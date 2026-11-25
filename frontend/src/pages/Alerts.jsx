@@ -1,6 +1,6 @@
 // "To review": one moment at a time, made for the phone. One question, two big buttons.
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useI18n } from "../i18n/I18nProvider";
 import { getAlerts, getSession, markAlertReviewed, USE_MOCKS } from "../api/client";
 import { useData } from "../lib/useData";
@@ -40,6 +40,7 @@ export default function Alerts() {
   const { data, error, loading } = useData(() => Promise.all([getAlerts(), getSession("latest")]), []);
   const [alerts, setAlerts] = useState(null);
   const [answered, setAnswered] = useState(0);
+  const [params] = useSearchParams();
 
   useEffect(() => {
     if (data) setAlerts(data[0]);
@@ -47,8 +48,11 @@ export default function Alerts() {
 
   const session = data?.[1];
   const children = session?.children ?? [];
-  const queue = useMemo(() => (alerts ?? []).filter((a) => !a.reviewed), [alerts]);
-  const done = useMemo(() => (alerts ?? []).filter((a) => a.reviewed), [alerts]);
+  // Opened from a child's page: only that child's moments.
+  const only = children.find((c) => c.id === params.get("child"));
+  const mine = useMemo(() => (alerts ?? []).filter((a) => !only || a.child_id === only.id), [alerts, only]);
+  const queue = useMemo(() => mine.filter((a) => !a.reviewed), [mine]);
+  const done = useMemo(() => mine.filter((a) => a.reviewed), [mine]);
 
   if (loading || error || !alerts) return <PageState loading={loading} error={error} />;
 
@@ -71,7 +75,15 @@ export default function Alerts() {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-5 px-4 pt-6 sm:pt-9">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t("quick.title")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t("quick.title")}</h1>
+          {only && (
+            <div className="mt-1 flex items-center gap-2 text-sm">
+              <span className="font-semibold" style={{ color: childTheme(children, only.id).color }}>{only.name}</span>
+              <Link to="/alerts" className="text-muted underline underline-offset-2">{t("quick.allChildren")}</Link>
+            </div>
+          )}
+        </div>
         {total > 0 && (
           <div className="flex gap-1.5" aria-label={t("quick.count", { n: Math.min(answered + 1, total), total })}>
             {Array.from({ length: total }, (_, i) => (
@@ -101,7 +113,7 @@ export default function Alerts() {
             )}
             <div className="flex justify-between px-1 pt-2 font-mono text-xs text-muted">
               <span>{clock(locale, session.started_at, current.start_s)}</span>
-              <span>{duration(t, current.end_s - current.start_s)}</span>
+              <span>{duration(t, Math.max(1, current.end_s - current.start_s))}</span>
             </div>
           </div>
           <p className="text-[15px] leading-relaxed text-body">{t(`event.desc.${current.type}`, { name: nameOf(current.child_id) })}</p>

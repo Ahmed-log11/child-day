@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Pipeline settings
     analyzed_fps: float = 3.0
 
+    # Claude writes the advice and answers the Ask page (empty = rule-based advice in the frontend)
+    anthropic_api_key: str = ""
+    insights_model: str = "claude-haiku-5-5"
+
     # Hugging Face model repo with tablet.pt and violence.pt (downloaded when missing)
     models_repo: str = "Ahmed-log/kanaf-models"
 

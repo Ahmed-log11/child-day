@@ -125,4 +125,14 @@ export const stopLive = (sessionId) => request(`/live/${sessionId}/stop`, { meth
 export const liveSocketUrl = (sessionId) => `${API_URL.replace(/^http/, "ws")}/live/${sessionId}`;
 
 // ---- Insights
-export const askInsights = (question, childId) => request("/insights/ask", json("POST", { question, child_id: childId }));
+// Claude answers from the latest analyzed day. answer: null = Claude is not set up on the server.
+export const askInsights = (question, lang, childId) =>
+  USE_MOCKS
+    ? Promise.resolve({ answer: null, source: "none", sources: [] })
+    : request("/insights/ask", json("POST", { question, lang, child_id: childId }));
+
+// Claude's advice for one child's day. advice: null = not set up, so the page writes its own (lib/advice.js).
+export const getDayAdvice = (sessionId, childId, lang) =>
+  USE_MOCKS
+    ? Promise.resolve({ advice: null, source: "none" })
+    : request("/insights/day", json("POST", { session_id: sessionId, child_id: childId, lang }));

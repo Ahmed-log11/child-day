@@ -133,3 +133,20 @@ button {
     transition: none !important;
   }
 }
+
+/* Report → "Save as PDF": white page, real colors, no glass effects */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  html,
+  body,
+  body > div,
+  #root > div {
+    background: #fff !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

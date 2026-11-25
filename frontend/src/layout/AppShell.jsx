@@ -71,10 +71,10 @@ export default function AppShell() {
   return (
     <TintContext.Provider value={setTint}>
       <div
-        className="min-h-screen pb-24 lg:pb-16"
+        className="min-h-screen pb-24 lg:pb-16 print:pb-0"
         style={{ background: tint ? `linear-gradient(180deg, ${tint} 0px, var(--color-page) 520px)` : undefined }}
       >
-        <header className="sticky top-0 z-30 px-3 py-3 sm:px-4">
+        <header className="sticky top-0 z-30 px-3 py-3 sm:px-4 print:hidden">
           <div className="glass mx-auto flex max-w-[1180px] items-center gap-3 rounded-full p-[7px] ps-4">
             <Link to="/" className="rounded-full">
               <Logo />
@@ -114,7 +114,7 @@ export default function AppShell() {
 
         <nav
           aria-label={t("nav.menu")}
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-[rgba(28,23,20,.1)] bg-[rgba(250,246,241,.9)] pb-[env(safe-area-inset-bottom)] backdrop-blur-lg lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 print:hidden border-t border-[rgba(28,23,20,.1)] bg-[rgba(250,246,241,.9)] pb-[env(safe-area-inset-bottom)] backdrop-blur-lg lg:hidden"
         >
           <ul className="mx-auto flex max-w-lg justify-around px-2 py-1.5">
             {NAV.filter((i) => !i.desktopOnly).map((item) => (
