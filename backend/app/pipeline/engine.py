@@ -394,7 +394,10 @@ class Engine:
 
         # falls (P2): rules on the recent keypoint history of this person
         for p in children_people:
-            history = list(self._tracks[p["track_id"]]["history"])
+            # History follows the CHILD across tracker ids: the tracker often loses a falling child for a
+            # frame or two and gives a new id, so a per-track history starts on the floor and misses the fall.
+            history = sorted((e for tid, tr in self._tracks.items() if self.track_to_child.get(tid) == p["child_id"]
+                              for e in tr["history"]), key=lambda e: e["t"])
             if self._call_p2("fall", fall_mod.detect_fall, history):
                 active[("fall", p["child_id"])] = {"child_id": p["child_id"], "conf": _mean_kp_conf(p)}
 
@@ -430,6 +433,14 @@ class Engine:
                             child_involved=True, other_is_adult=not other.get("child_id")))
                     else:
                         flag = score >= VIOLENCE_THRESHOLD
+                    confront_fn = getattr(violence_mod, "confrontation", None)
+                    if flag and confront_fn is not None:
+                        # P2's body check: the model alone flags dancing; real contact needs the two
+                        # to face each other and reach toward each other for a second.
+                        aspect = (self.width / self.height) if self.width and self.height else 1.0
+                        hist_a = list(self._tracks[a["track_id"]]["history"])
+                        hist_b = list(self._tracks[b["track_id"]]["history"])
+                        flag = self._call_p2("violence", lambda: confront_fn(hist_a, hist_b, aspect))
                     if flag:
                         ids = sorted({p.get("child_id") for p in close_pair if p.get("child_id")})
                         active[("violent_contact", *ids)] = {"child_id": ids[0], "conf": float(score)}

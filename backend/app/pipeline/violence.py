@@ -162,3 +162,70 @@ class ViolenceWatcher:
         events = [self._close(cid, m) for cid, m in self._open.items()]
         self._open.clear()
         return events
+
+
+# --- Body check on top of the model: are the two children really confronting each other? ------
+# The model alone scores almost any fast movement as violent on home video (dancing next to each
+# other scored 0.99 on a test clip). Real contact has a shape in the keypoints that dancing doesn't:
+# the two face each other, at arm's length, and both reach toward the other (grab, pull, push),
+# for at least a second. Measured on a test clip: struggle over a tablet = 7 frames in a row,
+# dancing side by side = never more than 1.
+FACE_MIN = 0.05            # head turned toward the other person by at least 5% of body height
+REACH_STRONG = 0.20        # one wrist goes at least 20% of body height past the shoulders, toward the other
+REACH_MIN = 0.10           # and the other person reaches at least 10%
+DIST_MIN, DIST_MAX = 0.30, 1.0   # body centers apart, in body heights: arm's length (closer = hug)
+CONFRONT_FRAMES = 3        # in a row (1 s at 3 fps)
+_KP_CONF = 0.3
+_NOSE, _L_SH, _R_SH, _L_WR, _R_WR = 0, 5, 6, 9, 10
+
+
+def _pt(person, i):
+    kps = person.get("keypoints") or []
+    if i >= len(kps) or (kps[i][2] if len(kps[i]) > 2 else 1.0) < _KP_CONF:
+        return None
+    return kps[i][0], kps[i][1]
+
+
+def _shoulders(person):
+    pts = [p for p in (_pt(person, _L_SH), _pt(person, _R_SH)) if p]
+    return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)) if pts else None
+
+
+def _confront_frame(a: dict, b: dict, aspect: float) -> bool:
+    """One frame: a and b face each other at arm's length and both reach toward the other."""
+    ha, hb = a["box"][3] - a["box"][1], b["box"][3] - b["box"][1]
+    h = (ha + hb) / 2
+    if h <= 0:
+        return False
+    ca, cb = (a["box"][0] + a["box"][2]) / 2, (b["box"][0] + b["box"][2]) / 2
+    if not DIST_MIN <= abs(cb - ca) * aspect / h <= DIST_MAX:
+        return False
+    side = 1 if cb > ca else -1                 # direction from a toward b
+    faces, reaches = [], []
+    for p, s, hp in ((a, side, ha), (b, -side, hb)):
+        sh, nose = _shoulders(p), _pt(p, _NOSE)
+        wrists = [w for w in (_pt(p, _L_WR), _pt(p, _R_WR)) if w]
+        if not sh or not nose or not wrists:
+            return False
+        faces.append((nose[0] - sh[0]) * aspect * s / hp)
+        reaches.append(max((w[0] - sh[0]) * aspect * s for w in wrists) / hp)
+    return min(faces) >= FACE_MIN and max(reaches) >= REACH_STRONG and min(reaches) >= REACH_MIN
+
+
+def confrontation(history_a: list, history_b: list, aspect: float = 1.0, min_frames: int = CONFRONT_FRAMES) -> bool:
+    """True if the two people confronted each other for `min_frames` frames in a row.
+
+    history_a / history_b: recent frames of each person, oldest first: {"t", "box", "keypoints"}
+    (normalized, COCO order). Frames are matched by time. aspect = video width / height.
+    Use it with violence_flag: no confrontation = no violent_contact event, whatever the score.
+    """
+    b_at = {round(f["t"], 2): f for f in history_b}
+    run = best = 0
+    for fa in history_a:
+        fb = b_at.get(round(fa["t"], 2))
+        if fb is not None and fa.get("box") and fb.get("box") and _confront_frame(fa, fb, aspect):
+            run += 1
+            best = max(best, run)
+        else:
+            run = 0
+    return best >= min_frames
