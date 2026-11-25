@@ -327,6 +327,14 @@ class Engine:
                             child_involved=True, other_is_adult=not other.get("child_id")))
                     else:
                         flag = score >= VIOLENCE_THRESHOLD
+                    confront_fn = getattr(violence_mod, "confrontation", None)
+                    if flag and confront_fn is not None:
+                        # P2's body check: the model alone flags dancing; real contact needs the two
+                        # to face each other and reach toward each other for a second.
+                        aspect = (self.width / self.height) if self.width and self.height else 1.0
+                        hist_a = list(self._tracks[a["track_id"]]["history"])
+                        hist_b = list(self._tracks[b["track_id"]]["history"])
+                        flag = self._call_p2("violence", lambda: confront_fn(hist_a, hist_b, aspect))
                     if flag:
                         ids = sorted({p.get("child_id") for p in close_pair if p.get("child_id")})
                         active[("violent_contact", *ids)] = {"child_id": ids[0], "conf": float(score)}

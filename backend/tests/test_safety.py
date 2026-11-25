@@ -3,7 +3,7 @@
 Pure Python: no model weights, no torch, no video needed.
 """
 from app.pipeline.fall import FallWatcher, detect_fall, lying_still
-from app.pipeline.violence import ViolenceWatcher, escalate_priority, violence_flag
+from app.pipeline.violence import ViolenceWatcher, confrontation, escalate_priority, violence_flag
 from app.pipeline.zones import ZoneWatcher, dangerous_object_near, in_zone
 
 EVENT_KEYS = {"id", "child_id", "type", "start_s", "end_s", "confidence", "zone_id", "clip_url", "reviewed"}
@@ -179,6 +179,39 @@ def test_two_pushes_far_apart_are_two_events_and_escalate():
     events = run_windows(w, scores)
     assert len(events) == 3
     assert [w.priority[e["id"]] for e in events] == ["normal", "normal", "high"]
+
+
+def body(cx, look, reach, t):
+    """A standing person at x=cx: head turned by `look`, furthest wrist `reach` past the shoulders (+ = right)."""
+    kps = [[0.0, 0.0, 0.0] for _ in range(17)]
+    kps[0] = [cx + look, 0.30, 0.9]                                 # nose
+    kps[5], kps[6] = [cx - 0.03, 0.38, 0.9], [cx + 0.03, 0.38, 0.9]  # shoulders
+    kps[9], kps[10] = [cx + reach, 0.50, 0.9], [cx, 0.55, 0.9]      # wrists
+    return {"t": t, "box": [cx - 0.08, 0.25, cx + 0.08, 0.85], "keypoints": kps}
+
+
+def pair(n, a_x, b_x, a_look, b_look, a_reach, b_reach):
+    return ([body(a_x, a_look, a_reach, k / 3) for k in range(n)],
+            [body(b_x, b_look, b_reach, k / 3) for k in range(n)])
+
+
+def test_struggle_is_a_confrontation():
+    # facing each other at arm's length, both pulling toward the middle
+    assert confrontation(*pair(6, 0.40, 0.70, +0.05, -0.05, +0.14, -0.10))
+
+
+def test_dancing_side_by_side_is_not():
+    # same distance, but both face the camera and wave their arms outward
+    assert not confrontation(*pair(6, 0.40, 0.70, 0.0, 0.0, -0.14, +0.14))
+
+
+def test_hug_is_not():
+    # facing each other but bodies almost together
+    assert not confrontation(*pair(6, 0.50, 0.55, +0.05, -0.05, +0.12, -0.12))
+
+
+def test_one_frame_of_contact_is_not_enough():
+    assert not confrontation(*pair(2, 0.40, 0.70, +0.05, -0.05, +0.14, -0.10))
 
 
 def test_adult_involved_is_high_priority():
