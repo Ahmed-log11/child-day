@@ -33,12 +33,13 @@ export default function Dashboard() {
   const [child, setChildId] = useSelectedChild(children);
   const theme = child ? childTheme(children, child.id) : null;
   usePageTint(theme?.tint ?? null);
-  const { data: frames } = useData(() => (session ? getFrames(session.id).catch(() => null) : Promise.resolve(null)), [session?.id]);
+  // Refetch after a name swap too: the server swaps the names inside the frames as well.
+  const { data: frames } = useData(() => (session ? getFrames(session.id).catch(() => null) : Promise.resolve(null)), [session?.id, swapped]);
   const colorFor = (id) => childTheme(children, id).onDark;
   const nameFor = (id) => children.find((c) => c.id === id)?.name;
   const { data: ai, loading: aiLoading } = useData(
     () => (session && child ? getDayAdvice(session.id, child.id, lang).catch(() => null) : Promise.resolve(null)),
-    [session?.id, child?.id, lang],
+    [session?.id, child?.id, lang, swapped],
   );
 
   if (loading || error || !child) return <PageState loading={loading} error={error} />;
