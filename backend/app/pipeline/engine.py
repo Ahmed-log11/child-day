@@ -288,7 +288,10 @@ class Engine:
 
         # falls (P2): rules on the recent keypoint history of this person
         for p in children_people:
-            history = list(self._tracks[p["track_id"]]["history"])
+            # History follows the CHILD across tracker ids: the tracker often loses a falling child for a
+            # frame or two and gives a new id, so a per-track history starts on the floor and misses the fall.
+            history = sorted((e for tid, tr in self._tracks.items() if self.track_to_child.get(tid) == p["child_id"]
+                              for e in tr["history"]), key=lambda e: e["t"])
             if self._call_p2("fall", fall_mod.detect_fall, history):
                 active[("fall", p["child_id"])] = {"child_id": p["child_id"], "conf": _mean_kp_conf(p)}
 

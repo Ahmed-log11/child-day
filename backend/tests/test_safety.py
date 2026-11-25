@@ -100,6 +100,19 @@ def test_detect_fall():
     assert not detect_fall(lie_down_on_purpose())              # sitting, then lying back
 
 
+def test_small_child_far_from_camera_falls():
+    """Real case from a test clip: hips dropped 0.09 of the frame, about a quarter of the child's height."""
+    frames = []
+    for k in range(3):                                   # standing, box 0.42 tall
+        f = pose(k / 3, True, 0.61); f["box"] = [0.40, 0.40, 0.55, 0.82]; frames.append(f)
+    for k in range(3, 12):                               # on the floor, box now short and wide
+        f = pose(k / 3, False, 0.70); f["box"] = [0.29, 0.62, 0.44, 0.81]; frames.append(f)
+    assert detect_fall(frames)
+    for f in frames:                                     # same drop, no box: frame-height rule, too small
+        f.pop("box")
+    assert not detect_fall(frames)
+
+
 def test_one_fall_is_one_event():
     w, frames, events = FallWatcher(), fall_frames(down_s=6.0), []
     for i, f in enumerate(frames):

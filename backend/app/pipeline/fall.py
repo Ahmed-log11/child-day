@@ -1,7 +1,10 @@
 """Fall detection with rules on keypoints. Owner: P2.
 
-`history` = the recent frames of ONE tracked person, oldest first, about 2-4 seconds
-(6-12 frames at 3 fps). Each entry:
+`history` = the recent frames of ONE child, oldest first, about 4-6 seconds (12-18 frames at 3 fps).
+It must follow the CHILD, not the tracker id: the tracker often loses a falling person for a frame or
+two and gives them a new id, so a per-track history starts already on the floor and the fall is missed.
+When a new track is linked to a child, its frames belong to that child's history from its first frame.
+Each entry:
     {"t": 12.33, "box": [x1, y1, x2, y2], "keypoints": [[x, y, conf] * 17], "aspect": 1.78}
 `aspect` (video width / height) is optional; without it the torso angle is slightly distorted
 on non-square videos. Coordinates are normalized 0-1, y grows downward (COCO keypoint order).
@@ -14,7 +17,9 @@ MIN_KP_CONF = 0.3
 MIN_USABLE_FRAMES = 5
 UPRIGHT_ANGLE = 40.0       # torso within 40 degrees of vertical = upright
 DOWN_ANGLE = 60.0          # torso more than 60 degrees from vertical = horizontal
-MIN_HIP_DROP = 0.10        # hips must move down by at least 10% of the frame height
+MIN_HIP_DROP = 0.10        # without a box: hips must move down by at least 10% of the frame height
+MIN_HIP_DROP_BODY = 0.15   # with a box: hips must move down by at least 15% of the person's standing height
+                           # (a small child far from the camera drops less than 10% of the frame)
 MAX_FALL_S = 1.5           # upright -> down must happen within this time (slower = lying down on purpose)
 MIN_DOWN_S = 2.0           # and the body stays down at least this long
 
@@ -27,7 +32,7 @@ def _mid(kps, a, b):
 
 
 def _pose(frame: dict):
-    """(t, hip_y, torso_angle_deg from vertical) or None if shoulders/hips are not visible."""
+    """(t, hip_y, torso_angle_deg from vertical, box_height or None), or None if shoulders/hips are not visible."""
     kps = frame.get("keypoints") or []
     sh, hp = _mid(kps, L_SHOULDER, R_SHOULDER), _mid(kps, L_HIP, R_HIP)
     if sh is None or hp is None:
@@ -35,7 +40,9 @@ def _pose(frame: dict):
     aspect = frame.get("aspect") or 1.0
     dx, dy = abs(sh[0] - hp[0]) * aspect, abs(sh[1] - hp[1])
     angle = math.degrees(math.atan2(dx, dy)) if (dx or dy) else 0.0
-    return frame["t"], hp[1], angle
+    box = frame.get("box")
+    height = (box[3] - box[1]) if box and len(box) == 4 and box[3] > box[1] else None
+    return frame["t"], hp[1], angle, height
 
 
 def _find_fall(history: list[dict]):
@@ -63,13 +70,15 @@ def _find_fall(history: list[dict]):
     if up_idx is None:
         return None    # slid from "leaning" to down: not a clear upright start
 
-    t_up, hip_up, _ = poses[up_idx]
-    t_down, hip_down = poses[down_start][0], poses[down_start][1]
+    t_up, hip_up, _, height_up = poses[up_idx]
+    t_down = poses[down_start][0]
     down_frames = poses[down_start:]
     stay_s = down_frames[-1][0] - t_down
 
     fast = (t_down - t_up) <= MAX_FALL_S
-    dropped = (sum(p[1] for p in down_frames) / len(down_frames)) - hip_up >= MIN_HIP_DROP
+    drop = (sum(p[1] for p in down_frames) / len(down_frames)) - hip_up
+    # Relative to the standing body when we know its size, so far-away children are not missed.
+    dropped = drop >= (MIN_HIP_DROP_BODY * height_up if height_up else MIN_HIP_DROP)
     stays = stay_s >= MIN_DOWN_S
     return (t_up, t_down) if (fast and dropped and stays) else None
 
