@@ -7,9 +7,10 @@ Per frame:
     child match -> track_id -> child_id (order of appearance, re-linked after ID switches)
     screens     -> TV on/off, who holds which device, screen state per person
     activity    -> movement score per person -> active / light / still
+                   eating / drinking per person (activity.IntakeWatcher) -> "intake"
     safety (P2) -> zones.in_zone, fall.detect_fall, violence.violent_contact_score
 At the end:
-    smoothing   -> presence / screen / activity segments per child
+    smoothing   -> presence / screen / activity / intake segments per child
     report (P4) -> report.build_report(session, children, segments, events)
 
 The engine never needs the whole video: every step works frame by frame (live mode).
@@ -51,6 +52,7 @@ MAX_MOVE_DT = 2.0             # frames further apart than this are not compared
 # smoothing windows (seconds)
 SCREEN_WINDOW_S = 3.0         # short, so a few seconds on a tablet still show
 ACTIVITY_WINDOW_S = 4.0
+INTAKE_WINDOW_S = 2.0         # short: a sip of a drink only lasts a few seconds
 PRESENCE_WINDOW_S = 3.0
 
 # safety events
@@ -117,7 +119,7 @@ class Engine:
 
         # per child, one sample per frame: (t, state or None)
         self.samples: dict[str, dict[str, list]] = {
-            c["id"]: {"presence": [], "screen": [], "activity": []} for c in self.children
+            c["id"]: {"presence": [], "screen": [], "activity": [], "intake": []} for c in self.children
         }
 
         # events
@@ -165,10 +167,10 @@ class Engine:
             child = {"id": f"c{n}", "name": f"Child {n}", "age_group": None}
         self.children.append(child)
         self.child_tracks[child["id"]] = []
-        self.samples[child["id"]] = {"presence": [], "screen": [], "activity": []}
+        self.samples[child["id"]] = {"presence": [], "screen": [], "activity": [], "intake": []}
         # earlier frames: this child was absent
         for t in self.times[:-1]:
-            for cat in ("presence", "screen", "activity"):
+            for cat in ("presence", "screen", "activity", "intake"):
                 self.samples[child["id"]][cat].append((t, "absent" if cat == "presence" else None))
         return child["id"]
 
@@ -210,7 +212,8 @@ class Engine:
     def _track_buffers(self, tid: int) -> dict:
         if tid not in self._tracks:
             self._tracks[tid] = {"prev_kp": None, "prev_t": None, "scores": deque(),
-                                 "history": deque(), "last_t": None}
+                                 "history": deque(), "last_t": None,
+                                 "intake": activity.IntakeWatcher()}
         return self._tracks[tid]
 
     def _activity(self, person: dict, t: float) -> str:
@@ -363,6 +366,7 @@ class Engine:
             p["screen"] = screens.best_screen_state(p, held.get(tid, []), tvs_on)
             p["activity"] = self._activity(p, t)
             buf = self._tracks[tid]
+            p["intake"] = buf["intake"].update(t, p["keypoints"], p["box"], objects)
             buf["last_t"] = t
             buf["history"].append({"t": t, "track_id": tid, "child_id": p["child_id"],
                                    "box": p["box"], "keypoints": p["keypoints"]})
@@ -373,6 +377,7 @@ class Engine:
             out_people.append({
                 "track_id": tid, "child_id": p["child_id"], "box": p["box"],
                 "keypoints": p["keypoints"], "screen": p["screen"], "activity": p["activity"],
+                "intake": p["intake"],
             })
 
         # per-child samples (one per frame, so segments cover exactly the present time)
@@ -382,6 +387,7 @@ class Engine:
             s["presence"].append((t, "present" if p else "absent"))
             s["screen"].append((t, p["screen"] if p else None))
             s["activity"].append((t, p["activity"] if p else None))
+            s["intake"].append((t, p["intake"] if p else None))
 
         alerts = self._update_events(self._safety(frame, people, t), t)
 
@@ -420,9 +426,11 @@ class Engine:
 
             for seg in (x for x in presence if x["state"] == "present"):
                 a, b = seg["start_s"], seg["end_s"]
-                for category, window in (("screen", SCREEN_WINDOW_S), ("activity", ACTIVITY_WINDOW_S)):
+                for category, window in (("screen", SCREEN_WINDOW_S), ("activity", ACTIVITY_WINDOW_S),
+                                         ("intake", INTAKE_WINDOW_S)):
                     window_samples = [(t, st) for t, st in s[category] if a - 1e-6 <= t < b - 1e-6]
-                    window_samples = self._fill_missing(window_samples, "none" if category == "screen" else "still")
+                    default = {"screen": "none", "activity": "still", "intake": "none"}[category]
+                    window_samples = self._fill_missing(window_samples, default)
                     parts = smoothing.smooth(window_samples, window)
                     if not parts:
                         continue
@@ -456,6 +464,8 @@ class Engine:
                                   "active_s", "light_s", "still_s", "present_s")}
             child_segs = [s for s in segments if s["child_id"] == cid]
             for seg in child_segs:
+                if seg["category"] not in ("screen", "activity", "presence"):
+                    continue  # intake 'none' must not be added to the screen 'none_s'
                 key = f"{seg['state']}_s"
                 if key in t:
                     t[key] += seg["end_s"] - seg["start_s"]

@@ -48,7 +48,22 @@ OBJECT_LABELS = {
     "bottle": "bottle",
     "book": "book",
     "scissors": "scissors",
-    "knife": "knife",
+    "knife": "knife",            # kept as "knife": P2's zones.dangerous_object_near relies on it
+    # eating / drinking (activity.IntakeWatcher)
+    "wine glass": "cup",
+    "bowl": "bowl",
+    "fork": "utensil",
+    "spoon": "utensil",
+    "banana": "food",
+    "apple": "food",
+    "sandwich": "food",
+    "orange": "food",
+    "broccoli": "food",
+    "carrot": "food",
+    "hot dog": "food",
+    "pizza": "food",
+    "donut": "food",
+    "cake": "food",
 }
 
 # Until P4's tablet model exists: a "cell phone" box bigger than this fraction of the
