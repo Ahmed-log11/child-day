@@ -54,7 +54,13 @@ def _ask_claude(system: str, prompt: str, max_tokens: int) -> str | None:
             model=settings.insights_model, max_tokens=max_tokens, system=system,
             messages=[{"role": "user", "content": prompt}],
         )
-        return "".join(getattr(b, "text", "") for b in msg.content).strip()
+        text = "".join(getattr(b, "text", "") for b in msg.content).strip()
+        if not text:
+            # No text back (for example the model spent its token budget before answering): use the fallback.
+            log.warning("Claude returned no text (stop_reason=%s, blocks=%s)",
+                        getattr(msg, "stop_reason", None), [getattr(b, "type", "?") for b in msg.content])
+            return None
+        return text
     except Exception:
         log.exception("Claude call failed")
         return None
@@ -119,7 +125,7 @@ def day_advice(report: dict, child_id: str, lang: str = "en") -> list[dict] | No
         "\"text\" (1 or 2 short sentences) and \"action\" (review, export, specialist or none). "
         "Use \"review\" when there are moments not reviewed yet. Use \"export\" or \"specialist\" at most once."
     )
-    text = _ask_claude(SYSTEM, prompt, 600)
+    text = _ask_claude(SYSTEM, prompt, 2000)
     return _parse_items(text) if text else None
 
 
@@ -132,4 +138,4 @@ def answer(report: dict, question: str, child_id: str | None, lang: str = "en") 
         f"Answer in {LANGS.get(lang, 'English')} in 2 to 4 short sentences, from these numbers only. "
         "If the numbers cannot answer it, say so kindly and say what Kanaf does track. Plain text, no lists."
     )
-    return _ask_claude(SYSTEM, prompt, 400)
+    return _ask_claude(SYSTEM, prompt, 2000)

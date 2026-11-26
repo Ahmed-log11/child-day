@@ -23,7 +23,7 @@ export default function Insights() {
     setProblem(null);
     try {
       const res = await askInsights(q, lang);
-      setAnswer({ question: q, ...res, answer: res.answer ?? t("ask.offline") });
+      setAnswer({ question: q, ...res, answer: res.answer || t("ask.offline") });
     } catch (err) {
       setProblem(t("ask.error", { msg: err.message }));
     } finally {
