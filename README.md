@@ -1,92 +1,79 @@
-# Child Day
+<h1 align="center">Kanaf · كَنَف</h1>
 
-A computer vision platform that turns a home camera feed into a clear picture of a child's day: screen time across every screen (TV, tablet, phone, and more than one at once), how much they moved, and safety alerts for falls, danger zones and violent contact. Everything in one dashboard for the parents.
+<p align="center">
+  <b>Your child's day, clearly.</b><br>
+  A home camera turned into one simple dashboard for parents: screen time, movement, and safety alerts.
+</p>
 
-In this project the input is an uploaded video. In production it would be a live camera feed.
+<p align="center">
+  <a href="https://kanaf-sa.vercel.app"><b>Live app</b></a> ·
+  <a href="https://ahmed-log-kanaf-api.hf.space/docs">API docs</a>
+</p>
 
-**Live:** [kanaf-sa.vercel.app](https://kanaf-sa.vercel.app) · **API docs:** [ahmed-log-kanaf-api.hf.space/docs](https://ahmed-log-kanaf-api.hf.space/docs)
+<p align="center">
+  <img src="docs/images/app-screens.png" alt="Kanaf app: today's summary, review moments, PDF report, and Ask" width="900">
+</p>
+
+---
+
+## The problem
+
+Working parents can't watch their kids all day. They don't know how many hours went to screens, whether the child moved at all, or if something dangerous happened while nobody was looking. Existing baby monitors only show a live feed, so the parent still has to watch it.
+
+## What Kanaf does
+
+Kanaf watches the camera feed and turns it into a summary of the day:
+
+- **Screen time on every screen.** TV, tablet and phone, including when the child uses more than one at once.
+- **Movement.** How active the child was across the day, and the long still stretches.
+- **Safety alerts.** Falls, entering a danger zone (like the kitchen or the stairs), and violent contact between kids, each saved as a short clip for the parent to review.
+- **A PDF report** of the day, ready to share with a specialist.
+- **Ask.** Parents ask questions about their kids' days in plain language. Claude answers from Kanaf's numbers only, and no video ever leaves Kanaf.
+
+The parent opens one dashboard instead of rewatching hours of video.
+
+> For the demo you upload a video. In a real home it would be a live camera feed. The pipeline is the same for both.
 
 ## How it works
 
 ```
-Video → YOLO11 detect + pose + tracking → per-second states → smoothing → report → dashboard
+Video → YOLO11 detection + pose + tracking → per-second states → smoothing → daily report → dashboard
 ```
 
-| Part | Approach |
+| What | How |
 |---|---|
 | People, TV, phone, cup | YOLO11 (pretrained) |
-| Tablet | YOLO11 fine-tuned |
-| Body keypoints | YOLO11-pose (pretrained) |
-| Tracking each child | ByteTrack |
-| Screen state, movement, danger zones | Rules on detections and keypoints |
+| Tablet | YOLO11 fine-tuned for tablets |
+| Body keypoints | YOLO11-pose |
+| Following each child | ByteTrack |
+| Screen use, movement, danger zones | Rules on detections and keypoints |
 | Falls | Rules on keypoints |
 | Violent contact | Classifier trained on RWF-2000 |
 
-## Repository
+The models look and the rules decide, so the behavior is easy to tune. Training went to the two places that needed it: the tablet detector and the violence classifier. Everything runs at 2–3 frames per second on a free CPU.
 
-| Folder | What's in it |
-|---|---|
-| `docs/` | API contract (`api.md`), architecture, deployment, and a guide for each team member (`docs/team/`) |
-| `backend/` | FastAPI app, the CV pipeline, database, Dockerfile |
-| `frontend/` | React + Vite + Tailwind app |
-| `training/` | Colab notebooks for the models we train |
-| `evaluation/` | Notebooks and ground truth for our results |
-| `demo/` | The script for the demo video |
+**Stack:** React + Vite + Tailwind on Vercel · FastAPI in Docker on Hugging Face Spaces · Supabase (Postgres + clip storage) · CI that tests the backend and deploys it automatically.
 
-## Team workflow
+## Privacy
 
-- Never push to `main`. Work on a branch and open a pull request.
-- The API format lives in `docs/api.md`. If it changes, update `frontend/src/mocks/` in the same pull request.
-- Datasets, videos, model weights and `.env` are never committed.
-- New Python libraries go in `backend/requirements.txt`, or the server build fails.
-- Anything merged into `main` that touches `backend/` is tested and deployed to Hugging Face automatically.
-
-## Start here
-
-1. Read `docs/api.md`. Every part of the project follows it.
-2. Open your guide in the table below. It lists your files, what each function takes and returns, and what to do first.
-3. Prototype in a notebook if you like, then move the working code into your `.py` file.
+Kanaf never stores the full video. It keeps the timeline and short alert clips only. It reports what happened, not judgments about the child, and every alert is for a parent to review, not a verdict.
 
 ## Team
 
-| Who | Owns | Files | Guide |
-|---|---|---|---|
-| Sulaiman | Perception: detection, pose, tracking, screen state, movement, smoothing | `backend/app/pipeline/perception.py`, `screens.py`, `activity.py`, `smoothing.py`, `engine.py` | [p1-perception.md](docs/team/p1-perception.md) |
-| Nouf | Safety: violent contact, falls, danger zones | `pipeline/violence.py`, `fall.py`, `zones.py`, `training/02_violence_classifier.ipynb` | [p2-safety.md](docs/team/p2-safety.md) |
-| Basma | Data and proof: tablet model, demo video, ground truth, evaluation, report, seed data | `pipeline/run.py`, `report.py`, `app/seed.py`, `app/storage.py`, `training/01_tablet_finetune.ipynb`, `evaluation/`, `demo/` | [p4-data-and-proof.md](docs/team/p4-data-and-proof.md) |
-| Ahmed | Frontend, backend API, database, integration, deployment, reviews every pull request | `frontend/`, `backend/app/api/`, `backend/app/db/`, `backend/app/main.py`, `docs/` | [deployment.md](docs/deployment.md) |
+Built in 5 days as the final project of the Computer Vision course at Tuwaiq Academy.
 
-## Running locally
+| | Role |
+|---|---|
+| **Ahmed Alluqmani** · [@Ahmed-log11](https://github.com/Ahmed-log11) | Idea and product. Frontend, backend API, database, integration, deployment, code review |
+| **Sulaiman Allumaylim** · [@Suliman41](https://github.com/Suliman41) | Perception: detection, pose, tracking, screen state, movement |
+| **Nouf** · [@nnnoufff](https://github.com/nnnoufff) | Safety: violent contact, falls, danger zones |
+| **Basma Almuntaser** · [@Basmaalmuntaser](https://github.com/Basmaalmuntaser) | Data and evaluation: tablet model, demo video, ground truth, results |
 
-Everything, with Docker:
+## Run it yourself
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-- Frontend: http://localhost:5173
-- Backend docs: http://localhost:8000/docs
-
-Without Docker:
-
-```bash
-# backend
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload        # http://localhost:8000/docs
-python -m pytest                     # run the tests
-
-# frontend (in a second terminal)
-cd frontend
-npm install
-npm run dev                          # http://localhost:5173
-```
-
-The frontend uses the mock data in `frontend/src/mocks/` by default, so it works without the backend. Set `VITE_USE_MOCKS=false` to use the real API.
-
-Deployment steps are in `docs/deployment.md`.
-
-## Privacy
-
-The system stores timelines and short alert clips, never the full video. It reports what happened, not judgments about the child. Alerts are for a parent to review, not verdicts.
+Frontend at `localhost:5173`, API docs at `localhost:8000/docs`. More detail is in [`docs/`](docs/): the API contract, architecture and deployment.
